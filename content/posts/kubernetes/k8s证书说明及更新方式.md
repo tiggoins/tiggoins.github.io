@@ -13,7 +13,7 @@ categories:
 
 在 Kubernetes 中包含多个以独立进程形式运行的组件，这些组件之间通过 HTTPS/gRPC 相互通信，以协同完成集群中应用的部署和管理工作。
 
-{{< figure src="../../images/posts/k8s/a57c868383c5fe1a3af1481da60e30ab5df8c4.jpg" title="k8s多master架构" >}}
+{{< figure src="../../images/kubernetes/a57c868383c5fe1a3af1481da60e30ab5df8c4.jpg" title="k8s多master架构" >}}
 
 从图中可以看到，Kubernetes控制平面中包含了etcd，kube-apiserver，kube-scheduler，kube-controller-manager等组件，这些组件会相互进行远程调用，例如 kube-apiserver会调用etcd接口查询或数据，kube-controller-manager会调用kube-apiserver接口查询集群中的对象状态；同时kube-apiserver也会和在工作节点上的kubelet和kube-proxy进行通信，以在工作节点上部署和管理应用。
 
@@ -295,8 +295,8 @@ groups:
 
 服务账户证书展示
 
-![image-20230508111309091](../../images/posts/k8s/image-20230508111309091.png)
+![image-20230508111309091](../../images/kubernetes/image-20230508111309091.png)
 
 ssl证书展示
 
-![image-20230508111341724](../../images/posts/k8s/image-20230508111341724.png)
+![image-20230508111341724](../../images/kubernetes/image-20230508111341724.png)
