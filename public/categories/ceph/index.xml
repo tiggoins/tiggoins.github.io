@@ -1,0 +1,32 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Ceph - 分类 - 御秋博客</title>
+        <link>https://www.freethinker.top/categories/ceph/</link>
+        <description>Ceph - 分类 - 御秋博客</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>395108141t@gmail.com (ltzhang)</managingEditor>
+            <webMaster>395108141t@gmail.com (ltzhang)</webMaster><lastBuildDate>Sun, 20 Dec 2020 00:00:00 &#43;0000</lastBuildDate><atom:link href="https://www.freethinker.top/categories/ceph/" rel="self" type="application/rss+xml" /><item>
+    <title>CRUSH map实践</title>
+    <link>https://www.freethinker.top/posts/crush-map%E5%AE%9E%E8%B7%B5/</link>
+    <pubDate>Sun, 20 Dec 2020 00:00:00 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/crush-map%E5%AE%9E%E8%B7%B5/</guid>
+    <description><![CDATA[<p><strong>前言</strong>:CRUSH算法是Ceph的核心算法，全称为<code>可扩展散列下的智能分发机制</code>(Controlled Replication Under Scalable Hashing)。是整个Ceph数据存储机制的核心。默认安装的Ceph集群会根据当前集群自动生成一套CRUSH map规则，但是默认的CRUSH map可能不符合预期，可以手动修改以满足实际需求。</p>]]></description>
+</item>
+<item>
+    <title>Ceph存储基本使用</title>
+    <link>https://www.freethinker.top/posts/ceph%E5%AD%98%E5%82%A8%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/</link>
+    <pubDate>Sat, 19 Dec 2020 00:00:00 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/ceph%E5%AD%98%E5%82%A8%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/</guid>
+    <description><![CDATA[<p>前言:Ceph能提供三大存储接口，即块存储、文件存储和对象存储。本篇博客主要介绍Ceph实现三种存储的步骤。</p>]]></description>
+</item>
+<item>
+    <title>Kubernetes对接Ceph存储</title>
+    <link>https://www.freethinker.top/posts/kubernetes%E5%AF%B9%E6%8E%A5ceph%E5%AD%98%E5%82%A8/</link>
+    <pubDate>Tue, 15 Dec 2020 00:00:00 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/kubernetes%E5%AF%B9%E6%8E%A5ceph%E5%AD%98%E5%82%A8/</guid>
+    <description><![CDATA[<p>前言：本篇博客主要介绍kubernetes集群如何与ceph集群进行对接，将ceph作为kubernetes的后端存储实现pvc的动态供应。本文中的ceph和kubernetes为一套集群。</p>]]></description>
+</item>
+</channel>
+</rss>

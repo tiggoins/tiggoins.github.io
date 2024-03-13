@@ -1,0 +1,48 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Docker - 分类 - 御秋博客</title>
+        <link>https://www.freethinker.top/categories/docker/</link>
+        <description>Docker - 分类 - 御秋博客</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>395108141t@gmail.com (ltzhang)</managingEditor>
+            <webMaster>395108141t@gmail.com (ltzhang)</webMaster><lastBuildDate>Sun, 30 Aug 2020 22:45:47 &#43;0000</lastBuildDate><atom:link href="https://www.freethinker.top/categories/docker/" rel="self" type="application/rss+xml" /><item>
+    <title>Docker网络中的Veth pair</title>
+    <link>https://www.freethinker.top/posts/docker%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%9A%84veth-pair/</link>
+    <pubDate>Sun, 30 Aug 2020 22:45:47 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/docker%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%9A%84veth-pair/</guid>
+    <description><![CDATA[<p>Docker中的veth pair是一种特殊的网络设备，目的是让容器内能顺利访问外部网路</p>]]></description>
+</item>
+<item>
+    <title>创建带有自定义库的Mysql镜像</title>
+    <link>https://www.freethinker.top/posts/%E5%88%9B%E5%BB%BA%E5%B8%A6%E6%9C%89%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BA%93%E7%9A%84mysql%E9%95%9C%E5%83%8F/</link>
+    <pubDate>Sun, 17 May 2020 10:51:41 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/%E5%88%9B%E5%BB%BA%E5%B8%A6%E6%9C%89%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BA%93%E7%9A%84mysql%E9%95%9C%E5%83%8F/</guid>
+    <description><![CDATA[<p>默认情况下，在mysql容器中创建新库时需要先运行mysql容器，把需要的sql文件通过docker cp的方式拷贝至容器内，再通过mysql的子命令将sql文件导入。过程比较繁琐，如果是公司的项目部署，可以创建带有公司的项目sql的自定义mysql镜像，避免繁琐的流程。</p>]]></description>
+</item>
+<item>
+    <title>Docker三剑客之Docker-Machine</title>
+    <link>https://www.freethinker.top/posts/docker%E4%B8%89%E5%89%91%E5%AE%A2%E4%B9%8Bdocker-machine/</link>
+    <pubDate>Mon, 11 May 2020 00:04:38 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/docker%E4%B8%89%E5%89%91%E5%AE%A2%E4%B9%8Bdocker-machine/</guid>
+    <description><![CDATA[<p>批量化在主机上安装docker可以使用docker-machine</p>]]></description>
+</item>
+<item>
+    <title>Dockerfile中RUN CMD以及ENTRYPOINT的区别</title>
+    <link>https://www.freethinker.top/posts/dockerfile%E4%B8%ADrun-cmd%E4%BB%A5%E5%8F%8Aentrypoint%E7%9A%84%E5%8C%BA%E5%88%AB/</link>
+    <pubDate>Wed, 25 Mar 2020 10:03:49 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/dockerfile%E4%B8%ADrun-cmd%E4%BB%A5%E5%8F%8Aentrypoint%E7%9A%84%E5%8C%BA%E5%88%AB/</guid>
+    <description><![CDATA[<p>Dockerfile中的RUN，CMD，ENTRTPOINT三个指令均可以用来指明容器中所运行的指令，但这三者存在的细微的区别。</p>]]></description>
+</item>
+<item>
+    <title>Prometheus&#43;Grafana监控宿主机</title>
+    <link>https://www.freethinker.top/posts/prometheus-grafana%E7%9B%91%E6%8E%A7%E5%AE%BF%E4%B8%BB%E6%9C%BA/</link>
+    <pubDate>Fri, 06 Mar 2020 23:21:10 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/prometheus-grafana%E7%9B%91%E6%8E%A7%E5%AE%BF%E4%B8%BB%E6%9C%BA/</guid>
+    <description><![CDATA[<p>Prometheus是非常优秀的监控工具，准确的说是一套完整的监控方案。提供了数据收集，存储，处理，加工展示，告警等一系列完整解决方案</p>]]></description>
+</item>
+</channel>
+</rss>

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Nginx-Limit模块 - 御秋博客</title><meta name="Description" content="Hugo theme - LoveIt"><meta property="og:title" content="Nginx-Limit模块" />
+<meta property="og:description" content="Nginx的 limit 模块主要包括:ngx_http_limit_req_module、ngx_http_limit_conn_module、ngx_stream_limit_conn_module" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://www.freethinker.top/posts/nginx-limit%E6%A8%A1%E5%9D%97/" /><meta property="og:image" content="https://www.freethinker.top/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-05-05T08:27:44+00:00" />
+<meta property="article:modified_time" content="2020-05-05T08:27:44+00:00" /><meta property="og:site_name" content="御秋博客" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://www.freethinker.top/logo.png"/>
+
+<meta name="twitter:title" content="Nginx-Limit模块"/>
+<meta name="twitter:description" content="Nginx的 limit 模块主要包括:ngx_http_limit_req_module、ngx_http_limit_conn_module、ngx_stream_limit_conn_module"/>
+<meta name="application-name" content="御秋博客">
+<meta name="apple-mobile-web-app-title" content="御秋博客"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://www.freethinker.top/posts/nginx-limit%E6%A8%A1%E5%9D%97/" /><link rel="prev" href="https://www.freethinker.top/posts/redis%E6%8C%81%E4%B9%85%E5%8C%96/" /><link rel="next" href="https://www.freethinker.top/posts/ssh%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E8%AE%BF%E9%97%AE%E5%86%85%E7%BD%91%E6%9C%8D%E5%8A%A1%E5%99%A8/" /><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Nginx-Limit模块",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/www.freethinker.top\/posts\/nginx-limit%E6%A8%A1%E5%9D%97\/"
+        },"image": ["https:\/\/www.freethinker.top\/images\/Apple-Devices-Preview.png"],"genre": "posts","keywords": "Nginx","wordcount":  984 ,
+        "url": "https:\/\/www.freethinker.top\/posts\/nginx-limit%E6%A8%A1%E5%9D%97\/","datePublished": "2020-05-05T08:27:44+00:00","dateModified": "2020-05-05T08:27:44+00:00","publisher": {
+            "@type": "Organization",
+            "name": "xxxx","logo": "https:\/\/www.freethinker.top\/images\/avatar.png"},"author": {
+                "@type": "Person",
+                "name": "ltzhang"
+            },"description": ""
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="御秋博客">御秋博客</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="御秋博客">御秋博客</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><div class="search-dropdown desktop">
+        <div id="search-dropdown-desktop"></div>
+    </div>
+    <div class="search-dropdown mobile">
+        <div id="search-dropdown-mobile"></div>
+    </div><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nginx-Limit模块</h1><div class="post-meta">
+            <div class="post-meta-line">&nbsp;<span class="post-category">收录于 <a href="/categories/nginx/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Nginx</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2020-05-05">2020-05-05</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;约 984 字&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;预计阅读 5 分钟&nbsp;<span id="/posts/nginx-limit%E6%A8%A1%E5%9D%97/" class="leancloud_visitors" data-flag-title="Nginx-Limit模块">
+                        <i class="far fa-eye fa-fw" aria-hidden="true"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;次阅读
+                    </span>&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#ngx_http_limit_req_module">ngx_http_limit_req_module</a>
+          <ul>
+            <li><a href="#指令">指令</a></li>
+            <li><a href="#其他指令">其他指令</a>
+              <ul>
+                <li><a href="#limit_req_dry_run">limit_req_dry_run</a></li>
+                <li><a href="#limit_req_log_level">limit_req_log_level</a></li>
+                <li><a href="#limit_req_status">limit_req_status</a></li>
+              </ul>
+            </li>
+            <li><a href="#测试">测试</a></li>
+          </ul>
+        </li>
+        <li><a href="#ngx_http_limit_conn_module">ngx_http_limit_conn_module</a>
+          <ul>
+            <li><a href="#测试-1">测试</a></li>
+          </ul>
+        </li>
+        <li><a href="#limit_rate">limit_rate</a>
+          <ul>
+            <li><a href="#指令-1">指令</a></li>
+            <li><a href="#测试-2">测试</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>Nginx的 <strong>limit</strong> 模块主要包括:<code>ngx_http_limit_req_module</code>、<code>ngx_http_limit_conn_module</code>、<code>ngx_stream_limit_conn_module</code></p>
+<p>以及<code>ngx_http_core_module</code>中limit_rate选项，由于stream主要用来实现四层协议（网络层和传输层）的转发、代理、负载均衡等，并且<code>ngx_stream_limit_conn_module</code>和<code>ngx_http_limit_conn_module</code>配置基本相同，所以本文不做介绍。</p>
+<h3 id="ngx_http_limit_req_module">ngx_http_limit_req_module</h3>
+<p>该模块用来限制某个特定键的请求处理的速率，这个特定键一般为某个ip。该模块主要用到了&quot;漏桶&quot;算法。</p>
+<h4 id="指令">指令</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=one:10m</span> <span class="s">rate=1r/s</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">server</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">   <span class="kn">location</span> <span class="s">/search/</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">       <span class="kn">limit_req</span> <span class="s">zone=one</span> <span class="s">burst=5</span> <span class="s">[nodelay|delay=num]</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">   <span class="p">}</span>
+</span></span></code></pre></div><p>首先使用<code>limit_req_zone</code>定义一个内存区域(<font color=#FF4500 size=3>定义在http段中</font>)：</p>
+<p><strong>$binary_remote_addr</strong>:特定用于该模块的变量，用来存取客户端ip地址。</p>
+<p><strong>zone=one:10m</strong>：定义一个大小为10m的共享内存区域，名称为<em>one</em>。对于ipv4地址占用4个字节，ipv6占用16个字节。存储一个连接状态在32位机器上占用64个字节，在64位机器上占用128个字节。1MB的空间可以存储16k个64字节状态或者是8k个128字节状态。所以10m的空间可以存储大约8w个状态，对于一般的中小型站点已经足够了。</p>
+<p><strong>rate=1r/s</strong>:定义请求速率为每秒仅接受一个请求</p>
+<p>在server配置段中引用上述配置(第5行)：</p>
+<p><strong>zone=one</strong>:引用上面<code>limit_req_zone</code>定义的内存区域<em>one</em></p>
+<p><strong>burst</strong>:定义请求缓存的长度，意思是如果某ip1秒内发来了10个请求，那么除了正在处理的1个请求，其他的请求会把暂时放置到burst中排队。超过<code>rate+burst</code>请求将会被全部丢弃</p>
+<p><strong>nodelay</strong>:一次处理<em>burst+rate</em>个请求，其余全部丢弃。如果不希望在请求受到限制时延迟过多的请求应当使用这个参数</p>
+<p><strong>delay=num</strong>:瞬时处理<code>num+rate</code>个请求，总共缓存burst个，剩余的<code>burst-num</code>按rate定义处理。丢弃多余请求。</p>
+<h4 id="其他指令">其他指令</h4>
+<h5 id="limit_req_dry_run">limit_req_dry_run</h5>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">语法：</span>   <span class="s">limit_req_dry_run</span> <span class="no">on</span> <span class="s">|</span> <span class="no">off</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="s">默认值：</span> <span class="s">limit_req_dry_run</span> <span class="no">off</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">语境：</span>   <span class="s">http</span> <span class="s">server</span> <span class="s">location</span>
+</span></span></code></pre></div><p>该指令开启&quot;干跑&quot;模式。开启该配置，请求处理的速率不再被限制。但是在共享内存区域，过量的请求的数值会像之前一样计算。</p>
+<h5 id="limit_req_log_level">limit_req_log_level</h5>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">语法:</span>	  <span class="s">limit_req_log_level</span> <span class="s">info</span> <span class="s">|</span> <span class="s">notice</span> <span class="s">|</span> <span class="s">warn</span> <span class="s">|</span> <span class="s">error</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">默认值:</span> <span class="s">limit_req_log_level</span> <span class="s">error</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">语境:</span>	  <span class="s">http</span> <span class="s">server</span> <span class="s">location</span>
+</span></span></code></pre></div><p>该指令设置<code>rate</code>超过限值或者延时请求处理的日志级别，默认为error级别。</p>
+<h5 id="limit_req_status">limit_req_status</h5>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">语法:</span>	  <span class="s">limit_req_status</span> <span class="s">code</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">默认值:</span>  <span class="s">limit_req_status</span> <span class="mi">503</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">语境:</span>	   <span class="s">http</span> <span class="s">server</span> <span class="s">location</span>
+</span></span></code></pre></div><p>该指令定义拒绝响应请求的http状态码，默认返回*503</p>
+<h4 id="测试">测试</h4>
+<p>1、不开启burst，不开启nodelay</p>
+<p>配置如下所示：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="ln"> 1</span><span class="cl"> <span class="k">http</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    <span class="kn">include</span>       <span class="s">mime.types</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="kn">default_type</span>  <span class="s">application/octet-stream</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="kn">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=one:10m</span> <span class="s">rate=1r/s</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="kn">log_format</span>  <span class="s">main</span>  <span class="s">&#39;</span><span class="nv">$remote_addr</span> <span class="s">&#34;</span><span class="nv">$request&#34;&#39;</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">                      <span class="s">&#39;</span><span class="nv">$status&#39;</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">                      <span class="s">&#39;&#34;</span><span class="nv">$http_user_agent&#34;&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="kn">server</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">        <span class="kn">listen</span>       <span class="mi">80</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">        <span class="kn">server_name</span>  <span class="s">localhost</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl">        <span class="kn">charset</span> <span class="s">utf-8</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">
+</span></span><span class="line"><span class="ln">17</span><span class="cl">        <span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">            <span class="kn">limit_req</span> <span class="s">zone=one</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">            <span class="kn">root</span>   <span class="s">/usr/share/nginx/html/</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">            <span class="kn">index</span>  <span class="s">index.html</span> <span class="s">index.htm</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">
+</span></span><span class="line"><span class="ln">23</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">
+</span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>在另一台虚拟机使用Apahce Benchmark进行压力测试</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">ab -c 10 -n10 http://192.168.0.106/index.html
+</span></span></code></pre></div><p>结果如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">192.168.0.107 - - [05/May/2020:20:58:41 +0800] &#34;GET / HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">192.168.0.107 - - [05/May/2020:20:58:41 +0800] &#34;GET / HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">192.168.0.107 - - [05/May/2020:20:58:41 +0800] &#34;GET / HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">192.168.0.107 - - [05/May/2020:20:58:41 +0800] &#34;GET / HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">192.168.0.107 - - [05/May/2020:20:58:41 +0800] &#34;GET / HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">192.168.0.107 - - [05/May/2020:20:58:41 +0800] &#34;GET / HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">192.168.0.107 - - [05/May/2020:20:58:41 +0800] &#34;GET / HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">192.168.0.107 - - [05/May/2020:20:58:41 +0800] &#34;GET / HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">192.168.0.107 - - [05/May/2020:20:58:41 +0800] &#34;GET / HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln">10</span><span class="cl">192.168.0.107 - - [05/May/2020:20:58:41 +0800] &#34;GET / HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span></code></pre></div><p>严格按照<code>rate</code>定义处理请求，除了第一个请求外其余所有的请求全部丢弃并返回503。</p>
+<p>2、在18行末尾添加burst=5</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">192.168.0.107 - - [05/May/2020:21:53:35 +0800] &#34;GET /index.html HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">192.168.0.107 - - [05/May/2020:21:53:35 +0800] &#34;GET /index.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">192.168.0.107 - - [05/May/2020:21:53:35 +0800] &#34;GET /index.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">192.168.0.107 - - [05/May/2020:21:53:35 +0800] &#34;GET /index.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">192.168.0.107 - - [05/May/2020:21:53:35 +0800] &#34;GET /index.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">192.168.0.107 - - [05/May/2020:21:53:36 +0800] &#34;GET /index.html HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">192.168.0.107 - - [05/May/2020:21:53:37 +0800] &#34;GET /index.html HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">192.168.0.107 - - [05/May/2020:21:53:38 +0800] &#34;GET /index.html HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">192.168.0.107 - - [05/May/2020:21:53:39 +0800] &#34;GET /index.html HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln">10</span><span class="cl">192.168.0.107 - - [05/May/2020:21:53:40 +0800] &#34;GET /index.html HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span></code></pre></div><p>按照定义，1秒内来了10个请求，burst=5，rate=1。总共缓存5个请求，处理1个请求，其余全部丢弃。这就是21:53:35内丢弃了4个请求。随后缓存的请求按照<code>rate</code>定义值处理。</p>
+<p>3、在18行末尾继续添加nodelay</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">192.168.0.107 - - [05/May/2020:21:58:19 +0800] &#34;GET /index.html HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">192.168.0.107 - - [05/May/2020:21:58:19 +0800] &#34;GET /index.html HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">192.168.0.107 - - [05/May/2020:21:58:19 +0800] &#34;GET /index.html HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">192.168.0.107 - - [05/May/2020:21:58:19 +0800] &#34;GET /index.html HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">192.168.0.107 - - [05/May/2020:21:58:19 +0800] &#34;GET /index.html HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">192.168.0.107 - - [05/May/2020:21:58:19 +0800] &#34;GET /index.html HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">192.168.0.107 - - [05/May/2020:21:58:19 +0800] &#34;GET /index.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">192.168.0.107 - - [05/May/2020:21:58:19 +0800] &#34;GET /index.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">192.168.0.107 - - [05/May/2020:21:58:19 +0800] &#34;GET /index.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln">10</span><span class="cl">192.168.0.107 - - [05/May/2020:21:58:19 +0800] &#34;GET /index.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span></code></pre></div><p>瞬间提供<code>rate+burst</code>个请求处理能力，丢弃其他请求返回503。</p>
+<p>4、将18行的nodelay改成delay=3</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">192.168.0.107 - - [05/May/2020:23:42:05 +0800] &#34;GET / HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">192.168.0.107 - - [05/May/2020:23:42:05 +0800] &#34;GET / HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">192.168.0.107 - - [05/May/2020:23:42:05 +0800] &#34;GET / HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">192.168.0.107 - - [05/May/2020:23:42:05 +0800] &#34;GET / HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">192.168.0.107 - - [05/May/2020:23:42:05 +0800] &#34;GET / HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">192.168.0.107 - - [05/May/2020:23:42:05 +0800] &#34;GET / HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">192.168.0.107 - - [05/May/2020:23:42:05 +0800] &#34;GET / HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">192.168.0.107 - - [05/May/2020:23:42:05 +0800] &#34;GET / HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">192.168.0.107 - - [05/May/2020:23:42:06 +0800] &#34;GET / HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln">10</span><span class="cl">192.168.0.107 - - [05/May/2020:23:42:07 +0800] &#34;GET / HTTP/1.0&#34; 200 70 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span></code></pre></div><p>可以看出nginx瞬间处理了4(rate+delay)个请求，缓存了2个请求，其余请求返回503。缓存下来的请求每秒处理一个。</p>
+<h3 id="ngx_http_limit_conn_module">ngx_http_limit_conn_module</h3>
+<p>ngx_http_limit_conn_module与ngx_http_limit_req_module主要区别在于，<code>conn</code>限制的连接的数量，<code>req</code>限制的是请求的数量。一个连接的生命周期中，会存在一个或者多个请求，这是为了加快效率，避免每次请求都要三次握手建立连接，现在的HTTP/1.1协议都支持这种特性，叫做keepalive。</p>
+<p>官方配置示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="ln">1</span><span class="cl"> <span class="k">http</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    <span class="kn">limit_conn_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=addr:10m</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    <span class="kn">server</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">        
+</span></span><span class="line"><span class="ln">6</span><span class="cl">        <span class="kn">location</span> <span class="s">/download/</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">7</span><span class="cl">           <span class="kn">limit_conn</span> <span class="s">addr</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">8</span><span class="cl">        <span class="p">}</span>
+</span></span></code></pre></div><p>limit_conn_zone：设置共享区域的参数，该区域将保留各种键的状态，与<code>ngx_http_limit_req_module</code>不同的是，此模块仅定义了区域了大小。键里可以保存文本，变量或者两者的组合。</p>
+<p>limit_conn:设置共享内存区域以及键定义的最大允许的连接数量。超过限值时，服务器将会发送错误给客户端。<code>limit_conn addr 1</code>允许一个ip一次最多建立一次连接。如果是<code>HTTP/2</code>，那么每个并发的请求都会被视作是一个单独的连接。</p>
+<p><strong>limit_conn_dry_run</strong>,<strong>limit_conn_log_level</strong>,<strong>limit_conn_status</strong>与<code>ngx_http_limit_req_module</code>中一致不再说明。</p>
+<h4 id="测试-1">测试</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">192.168.0.107 - - [05/May/2020:23:54:27 +0800] &#34;GET /test.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">192.168.0.107 - - [05/May/2020:23:54:27 +0800] &#34;GET /test.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">192.168.0.107 - - [05/May/2020:23:54:27 +0800] &#34;GET /test.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">192.168.0.107 - - [05/May/2020:23:54:27 +0800] &#34;GET /test.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">192.168.0.107 - - [05/May/2020:23:54:27 +0800] &#34;GET /test.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">192.168.0.107 - - [05/May/2020:23:54:27 +0800] &#34;GET /test.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">192.168.0.107 - - [05/May/2020:23:54:27 +0800] &#34;GET /test.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">192.168.0.107 - - [05/May/2020:23:54:27 +0800] &#34;GET /test.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">192.168.0.107 - - [05/May/2020:23:54:27 +0800] &#34;GET /test.html HTTP/1.0&#34; 503 197 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span><span class="line"><span class="ln">10</span><span class="cl">192.168.0.107 - - [05/May/2020:23:54:29 +0800] &#34;GET /test.html HTTP/1.0&#34; 200 536870912 &#34;-&#34; &#34;ApacheBench/2.3&#34;
+</span></span></code></pre></div><p>test.html为50M，测试1秒内仅能建立一个连接其余全部丢弃。但index.html测试失败，不知道和文件的大小存在什么关联？</p>
+<h3 id="limit_rate">limit_rate</h3>
+<h4 id="指令-1">指令</h4>
+<p>limit_rate是ngx_http_core_module这个核心模块自带的一个配置选项。可以用来限制单个连接的下载速率。对于资源文件下载服务器来说，有必要限制这个值，防止单个ip过高的速率影响他人的正常使用。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">语法:	   limit_rate rate;
+</span></span><span class="line"><span class="ln">2</span><span class="cl">默认值:  limit_rate 0;
+</span></span><span class="line"><span class="ln">3</span><span class="cl">语境:	   http, server, location, if in location
+</span></span></code></pre></div><p>默认情况下，这个值是<em>0</em>，也就是不限制下载速率。官方推荐使用map来灵活定义下载速率。如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">map $slow $rate {
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    0     40k;
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    1     80k;
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    default 120k;
+</span></span><span class="line"><span class="ln">5</span><span class="cl">}
+</span></span><span class="line"><span class="ln">6</span><span class="cl">limit_rate $rate; #http，server，location，if in location
+</span></span></code></pre></div><p>当然**$slow**不是nginx自带的变量，所以直接使用会报错。需要根据ngx_http_geo_module模块自带的geo指令来定义$slow变量。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">geo $remote_addr $slow {
+</span></span><span class="line"><span class="ln">2</span><span class="cl">	default 0;
+</span></span><span class="line"><span class="ln">3</span><span class="cl">	47.103.215.250 1;
+</span></span><span class="line"><span class="ln">4</span><span class="cl">}
+</span></span></code></pre></div><p>以上是这样的过程:<code>$remote_addr</code>是nginx自带的变量，geo指令拿到这个变量对应的ip地址去和下面的<code>default</code>或<code>47.103.215.250</code>匹配，如果满足<code>$remote_addr=47.103.215.250</code>,则把$slow变量设置为1,否则就设置为0。再拿0或者1去map里匹配得到<code>$rate</code>,最后在limit_rate中应用$rate来达到限制速率的要求。</p>
+<blockquote>
+<p>注：geo 和 map都是应用在http段中</p>
+</blockquote>
+<h4 id="测试-2">测试</h4>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/limit_rate%e6%b5%8b%e8%af%95.png"
+        data-srcset="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/limit_rate%e6%b5%8b%e8%af%95.png, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/limit_rate%e6%b5%8b%e8%af%95.png 1.5x, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/limit_rate%e6%b5%8b%e8%af%95.png 2x"
+        data-sizes="auto"
+        alt="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/limit_rate测试.png"
+        title="avatar" /></p>
+<p>​                                           <strong>本地下载测试为40KB/s</strong></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/20200504085807.png"
+        data-srcset="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/20200504085807.png, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/20200504085807.png 1.5x, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/20200504085807.png 2x"
+        data-sizes="auto"
+        alt="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/20200504085807.png"
+        title="avatar" /></p>
+<p>​                                     <strong>47.103.215.250上测试为80KB/s</strong></p>
+<p>当然limit_rate只能限制单个ip的一个请求：</p>
+<blockquote>
+<p>The limit is set per a request, and so if a client simultaneously opens two connections, the overall rate will be twice as much as the specified limit.</p>
+</blockquote>
+<p>如果客户端同时发起了两个链接，这个下载速度会变成限值的2倍。所以对于迅雷这种多线程的下载器，设置这样的限值的无效的。</p>
+<p>解决的方法就是配合<code>ngx_http_limit_conn_module</code>模块，让服务器每秒只响应一个ip的一个请求，其余请求全部丢弃。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="ln"> 1</span><span class="cl">    <span class="k">limit_conn_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=one:10m</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    <span class="k">server</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">        <span class="kn">listen</span>       <span class="mi">80</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">        <span class="kn">server_name</span>  <span class="s">localhost</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        <span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">            <span class="kn">limit_conn</span> <span class="no">on</span><span class="s">e</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">            <span class="kn">limit_rate</span> <span class="mi">80k</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">            <span class="kn">root</span>   <span class="s">/usr/share/nginx/html/</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="p">}</span>
+</span></span></code></pre></div><p>在测试端下载test.html</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">[root@k8s-node ~]# wget http://192.168.0.106/test.html
+</span></span><span class="line"><span class="ln">2</span><span class="cl">--2020-05-06 00:00:43--  http://192.168.0.106/test.html
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Connecting to 192.168.0.106:80... connected.
+</span></span><span class="line"><span class="ln">4</span><span class="cl">HTTP request sent, awaiting response... 200 OK
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Length: 536870912 (512M) [text/html]
+</span></span><span class="line"><span class="ln">6</span><span class="cl">Saving to: ‘test.html.2’
+</span></span><span class="line"><span class="ln">7</span><span class="cl">
+</span></span><span class="line"><span class="ln">8</span><span class="cl">test.html.2                        
+</span></span><span class="line"><span class="ln">9</span><span class="cl">0%[                                                    ]   1.29M  79.6KB/s    eta 1h 48m 
+</span></span></code></pre></div><p>复制终端会话再次请求：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Last login: Tue May  5 23:40:24 2020 from 192.168.0.101
+</span></span><span class="line"><span class="ln">2</span><span class="cl">[root@k8s-node ~]# wget http://192.168.0.106/test.html
+</span></span><span class="line"><span class="ln">3</span><span class="cl">--2020-05-06 00:01:18--  http://192.168.0.106/test.html
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Connecting to 192.168.0.106:80... connected.
+</span></span><span class="line"><span class="ln">5</span><span class="cl">HTTP request sent, awaiting response... 503 Service Temporarily Unavailable
+</span></span><span class="line"><span class="ln">6</span><span class="cl">2020-05-06 00:01:19 ERROR 503: Service Temporarily Unavailable.
+</span></span></code></pre></div><p>nginx直接返回了503，这样就达到了限制单个ip的请求速率的目的。</p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-05-05</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/nginx/">Nginx</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/redis%E6%8C%81%E4%B9%85%E5%8C%96/" class="prev" rel="prev" title="Redis持久化"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>Redis持久化</a>
+            <a href="/posts/ssh%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E8%AE%BF%E9%97%AE%E5%86%85%E7%BD%91%E6%9C%8D%E5%8A%A1%E5%99%A8/" class="next" rel="next" title="SSH端口转发访问内网服务器">SSH端口转发访问内网服务器<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
+</div>
+<div id="comments"><div id="valine" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://valine.js.org/">Valine</a>.
+            </noscript></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork">
+				Powered By <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" width="20" height="10" style="fill: #ff6a00" class="sc-CB-bczRLJ CB-fQyPEP"><path d="M21.4 22.4h21.2v-4.8H21.4z"></path><path d="M53.3 0H39.2l3.4 4.8L52.9 8c1.9.6 3.1 2.3 3.1 4.3v15.4c0 2-1.2 3.7-3.1 4.3l-10.3 3.2-3.4 4.8h14.1c6 0 10.7-4.8 10.7-10.7V10.7C64 4.7 59.2 0 53.3 0M10.7 0h14.1l-3.4 4.8L11.1 8A4.5 4.5 0 0 0 8 12.3v15.4c0 2 1.2 3.7 3.1 4.3l10.3 3.2 3.4 4.8H10.7C4.7 40 0 35.2 0 29.3V10.7C0 4.7 4.8 0 10.7 0"></path></svg><a href="https://www.aliyun.com">Aliyun</a><br /><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2019 - 2023</span><span class="icp-splitter">&nbsp;|&nbsp;</span><br class="icp-br"/>
+                    <span class="icp">苏ICP备19065273号</span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/valine/valine.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/valine@1.4.18/dist/Valine.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/algoliasearch@4.13.0/dist/algoliasearch-lite.umd.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":50},"comment":{"valine":{"appId":"IyRdCooou4lRgtrqYYEIDgRK-gzGzoHsz","appKey":"3hXIq4IuQBcg76WWjetWOrMO","avatar":"mp","el":"#valine","emojiCDN":"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/","emojiMaps":{"100":"1f4af.png","alien":"1f47d.png","anger":"1f4a2.png","angry":"1f620.png","anguished":"1f627.png","astonished":"1f632.png","black_heart":"1f5a4.png","blue_heart":"1f499.png","blush":"1f60a.png","bomb":"1f4a3.png","boom":"1f4a5.png","broken_heart":"1f494.png","brown_heart":"1f90e.png","clown_face":"1f921.png","cold_face":"1f976.png","cold_sweat":"1f630.png","confounded":"1f616.png","confused":"1f615.png","cry":"1f622.png","crying_cat_face":"1f63f.png","cupid":"1f498.png","dash":"1f4a8.png","disappointed":"1f61e.png","disappointed_relieved":"1f625.png","dizzy":"1f4ab.png","dizzy_face":"1f635.png","drooling_face":"1f924.png","exploding_head":"1f92f.png","expressionless":"1f611.png","face_vomiting":"1f92e.png","face_with_cowboy_hat":"1f920.png","face_with_hand_over_mouth":"1f92d.png","face_with_head_bandage":"1f915.png","face_with_monocle":"1f9d0.png","face_with_raised_eyebrow":"1f928.png","face_with_rolling_eyes":"1f644.png","face_with_symbols_on_mouth":"1f92c.png","face_with_thermometer":"1f912.png","fearful":"1f628.png","flushed":"1f633.png","frowning":"1f626.png","ghost":"1f47b.png","gift_heart":"1f49d.png","green_heart":"1f49a.png","grimacing":"1f62c.png","grin":"1f601.png","grinning":"1f600.png","hankey":"1f4a9.png","hear_no_evil":"1f649.png","heart":"2764-fe0f.png","heart_decoration":"1f49f.png","heart_eyes":"1f60d.png","heart_eyes_cat":"1f63b.png","heartbeat":"1f493.png","heartpulse":"1f497.png","heavy_heart_exclamation_mark_ornament":"2763-fe0f.png","hole":"1f573-fe0f.png","hot_face":"1f975.png","hugging_face":"1f917.png","hushed":"1f62f.png","imp":"1f47f.png","innocent":"1f607.png","japanese_goblin":"1f47a.png","japanese_ogre":"1f479.png","joy":"1f602.png","joy_cat":"1f639.png","kiss":"1f48b.png","kissing":"1f617.png","kissing_cat":"1f63d.png","kissing_closed_eyes":"1f61a.png","kissing_heart":"1f618.png","kissing_smiling_eyes":"1f619.png","laughing":"1f606.png","left_speech_bubble":"1f5e8-fe0f.png","love_letter":"1f48c.png","lying_face":"1f925.png","mask":"1f637.png","money_mouth_face":"1f911.png","nauseated_face":"1f922.png","nerd_face":"1f913.png","neutral_face":"1f610.png","no_mouth":"1f636.png","open_mouth":"1f62e.png","orange_heart":"1f9e1.png","partying_face":"1f973.png","pensive":"1f614.png","persevere":"1f623.png","pleading_face":"1f97a.png","pouting_cat":"1f63e.png","purple_heart":"1f49c.png","rage":"1f621.png","relaxed":"263a-fe0f.png","relieved":"1f60c.png","revolving_hearts":"1f49e.png","right_anger_bubble":"1f5ef-fe0f.png","robot_face":"1f916.png","rolling_on_the_floor_laughing":"1f923.png","scream":"1f631.png","scream_cat":"1f640.png","see_no_evil":"1f648.png","shushing_face":"1f92b.png","skull":"1f480.png","skull_and_crossbones":"2620-fe0f.png","sleeping":"1f634.png","sleepy":"1f62a.png","slightly_frowning_face":"1f641.png","slightly_smiling_face":"1f642.png","smile":"1f604.png","smile_cat":"1f638.png","smiley":"1f603.png","smiley_cat":"1f63a.png","smiling_face_with_3_hearts":"1f970.png","smiling_imp":"1f608.png","smirk":"1f60f.png","smirk_cat":"1f63c.png","sneezing_face":"1f927.png","sob":"1f62d.png","space_invader":"1f47e.png","sparkling_heart":"1f496.png","speak_no_evil":"1f64a.png","speech_balloon":"1f4ac.png","star-struck":"1f929.png","stuck_out_tongue":"1f61b.png","stuck_out_tongue_closed_eyes":"1f61d.png","stuck_out_tongue_winking_eye":"1f61c.png","sunglasses":"1f60e.png","sweat":"1f613.png","sweat_drops":"1f4a6.png","sweat_smile":"1f605.png","thinking_face":"1f914.png","thought_balloon":"1f4ad.png","tired_face":"1f62b.png","triumph":"1f624.png","two_hearts":"1f495.png","unamused":"1f612.png","upside_down_face":"1f643.png","weary":"1f629.png","white_frowning_face":"2639-fe0f.png","white_heart":"1f90d.png","wink":"1f609.png","woozy_face":"1f974.png","worried":"1f61f.png","yawning_face":"1f971.png","yellow_heart":"1f49b.png","yum":"1f60b.png","zany_face":"1f92a.png","zipper_mouth_face":"1f910.png","zzz":"1f4a4.png"},"enableQQ":false,"highlight":true,"lang":"zh-CN","pageSize":10,"placeholder":"你的评论 ...","recordIP":true,"serverURLs":"https://iyrdcooo.lc-cn-n1-shared.com","visitor":true}},"search":{"algoliaAppID":"RALZ9QXE5X","algoliaIndex":"search","algoliaSearchKey":"edb3145c2e9fe9c9c4eb49630c0dc4f6","highlightTag":"em","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":30,"type":"algolia"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Kubernetes对接Ceph存储 - 御秋博客</title><meta name="Description" content="Hugo theme - LoveIt"><meta property="og:title" content="Kubernetes对接Ceph存储" />
+<meta property="og:description" content="前言：本篇博客主要介绍kubernetes集群如何与ceph集群进行对接，将ceph作为kubernetes的后端存储实现pvc的动态供应。本文中的ceph和kubernetes为一套集群。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://www.freethinker.top/posts/kubernetes%E5%AF%B9%E6%8E%A5ceph%E5%AD%98%E5%82%A8/" /><meta property="og:image" content="https://www.freethinker.top/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-12-15T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-12-15T00:00:00+00:00" /><meta property="og:site_name" content="御秋博客" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://www.freethinker.top/logo.png"/>
+
+<meta name="twitter:title" content="Kubernetes对接Ceph存储"/>
+<meta name="twitter:description" content="前言：本篇博客主要介绍kubernetes集群如何与ceph集群进行对接，将ceph作为kubernetes的后端存储实现pvc的动态供应。本文中的ceph和kubernetes为一套集群。"/>
+<meta name="application-name" content="御秋博客">
+<meta name="apple-mobile-web-app-title" content="御秋博客"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://www.freethinker.top/posts/kubernetes%E5%AF%B9%E6%8E%A5ceph%E5%AD%98%E5%82%A8/" /><link rel="prev" href="https://www.freethinker.top/posts/calico%E4%BF%AE%E6%94%B9podcidr/" /><link rel="next" href="https://www.freethinker.top/posts/ceph%E5%AD%98%E5%82%A8%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/" /><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Kubernetes对接Ceph存储",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/www.freethinker.top\/posts\/kubernetes%E5%AF%B9%E6%8E%A5ceph%E5%AD%98%E5%82%A8\/"
+        },"image": ["https:\/\/www.freethinker.top\/images\/Apple-Devices-Preview.png"],"genre": "posts","keywords": "Kubernetes, Ceph","wordcount":  686 ,
+        "url": "https:\/\/www.freethinker.top\/posts\/kubernetes%E5%AF%B9%E6%8E%A5ceph%E5%AD%98%E5%82%A8\/","datePublished": "2020-12-15T00:00:00+00:00","dateModified": "2020-12-15T00:00:00+00:00","publisher": {
+            "@type": "Organization",
+            "name": "xxxx","logo": "https:\/\/www.freethinker.top\/images\/avatar.png"},"author": {
+                "@type": "Person",
+                "name": "ltzhang"
+            },"description": ""
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="御秋博客">御秋博客</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="御秋博客">御秋博客</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><div class="search-dropdown desktop">
+        <div id="search-dropdown-desktop"></div>
+    </div>
+    <div class="search-dropdown mobile">
+        <div id="search-dropdown-mobile"></div>
+    </div><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Kubernetes对接Ceph存储</h1><div class="post-meta">
+            <div class="post-meta-line">&nbsp;<span class="post-category">收录于 <a href="/categories/kubernetes/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Kubernetes</a>&nbsp;<a href="/categories/ceph/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Ceph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2020-12-15">2020-12-15</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;约 686 字&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;预计阅读 4 分钟&nbsp;<span id="/posts/kubernetes%E5%AF%B9%E6%8E%A5ceph%E5%AD%98%E5%82%A8/" class="leancloud_visitors" data-flag-title="Kubernetes对接Ceph存储">
+                        <i class="far fa-eye fa-fw" aria-hidden="true"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;次阅读
+                    </span>&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#主机列表">主机列表</a></li>
+        <li><a href="#对接过程">对接过程</a>
+          <ul>
+            <li><a href="#创建存储池mypool">创建存储池mypool</a></li>
+            <li><a href="#创建secret对象">创建secret对象</a></li>
+            <li><a href="#创建storageclass">创建StorageClass</a></li>
+            <li><a href="#创建pvc">创建pvc</a></li>
+            <li><a href="#创建测试pod">创建测试pod</a></li>
+          </ul>
+        </li>
+        <li><a href="#排障步骤">排障步骤</a>
+          <ul>
+            <li><a href="#部署外部provisioner">部署外部provisioner</a></li>
+            <li><a href="#更新原有storageclass">更新原有storageclass</a></li>
+            <li><a href="#重新创建pvc及pod">重新创建pvc及pod</a></li>
+            <li><a href="#验证pv">验证PV</a></li>
+          </ul>
+        </li>
+        <li><a href="#常见错误">常见错误</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>前言：本篇博客主要介绍kubernetes集群如何与ceph集群进行对接，将ceph作为kubernetes的后端存储实现pvc的动态供应。本文中的ceph和kubernetes为一套集群。</p>
+<h3 id="主机列表">主机列表</h3>
+<table>
+<thead>
+<tr>
+<th>K8s集群角色</th>
+<th>ceph集群角色</th>
+<th>IP</th>
+<th>内核</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>master-1</td>
+<td>mon、osd节点</td>
+<td>172.16.200.101</td>
+<td>4.4.247-1.el7.elrepo.x86_64</td>
+</tr>
+<tr>
+<td>master-2</td>
+<td>mon、osd节点</td>
+<td>172.16.200.102</td>
+<td>4.4.247-1.el7.elrepo.x86_64</td>
+</tr>
+<tr>
+<td>master-3</td>
+<td>mon、osd节点</td>
+<td>172.16.200.103</td>
+<td>4.4.247-1.el7.elrepo.x86_64</td>
+</tr>
+<tr>
+<td>node-1</td>
+<td>osd节点</td>
+<td>172.16.200.104</td>
+<td>4.4.247-1.el7.elrepo.x86_64</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>升级内核的原因：ceph官方推荐4.1.4版本以上的版本</p>
+</blockquote>
+<p>对接前需要保证ceph集群已经处于健康状态</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln">1</span><span class="cl">root ~ &gt;&gt;&gt; ceph health
+</span></span><span class="line"><span class="ln">2</span><span class="cl">HEALTH_OK
+</span></span></code></pre></div><h3 id="对接过程">对接过程</h3>
+<h4 id="创建存储池mypool">创建存储池mypool</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln">1</span><span class="cl">root ~ &gt;&gt;&gt; ceph osd pool create mypool <span class="m">128</span> <span class="m">128</span> <span class="c1">#设置PG和PGP为128</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">pool <span class="s1">&#39;mypool&#39;</span> created
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">root ~ &gt;&gt;&gt; ceph osd pool ls
+</span></span><span class="line"><span class="ln">5</span><span class="cl">mypool
+</span></span></code></pre></div><h4 id="创建secret对象">创建secret对象</h4>
+<p>在ceph中创建kube用户并授予相应的权限</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln">1</span><span class="cl">root ~ &gt;&gt;&gt; ceph auth get-or-create client.kube mon <span class="s1">&#39;allow r&#39;</span> osd <span class="s1">&#39;allow class-read object_prefix rbd_children,allow rwx pool=mypool&#39;</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln"> 1</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; cat ceph-secret.yaml 
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">apiVersion: v1
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">kind: Secret
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">metadata:
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  name: ceph-kube-secret
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  namespace: default
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">data: 
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  key: <span class="s2">&#34;ceph auth get-key client.kube | base64&#34;</span> 
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">type: kubernetes.io/rbd
+</span></span><span class="line"><span class="ln">10</span><span class="cl">---
+</span></span><span class="line"><span class="ln">11</span><span class="cl">apiVersion: v1
+</span></span><span class="line"><span class="ln">12</span><span class="cl">kind: Secret
+</span></span><span class="line"><span class="ln">13</span><span class="cl">metadata:
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  name: ceph-admin-secret
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  namespace: default
+</span></span><span class="line"><span class="ln">16</span><span class="cl">data:
+</span></span><span class="line"><span class="ln">17</span><span class="cl">  key: <span class="s2">&#34;ceph auth get-key client.admin | base64&#34;</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">type: kubernetes.io/rbd
+</span></span></code></pre></div><p>创建上述资源</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln">1</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; kubectl apply -f ceph-secret.yaml
+</span></span></code></pre></div><h4 id="创建storageclass">创建StorageClass</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln"> 1</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; cat ceph-storageclass.yaml
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">apiVersion: storage.k8s.io/v1
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">kind: StorageClass
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">metadata:
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  name: ceph-storageclass
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">provisioner: kubernetes.io/rbd
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">parameters:
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  monitors: 172.16.200.101:6789,172.16.200.102:6789,172.16.200.103:6789  <span class="c1">#定义mon节点，ceph-mon默认监听6789端口</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  adminId: admin
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  adminSecretName: ceph-admin-secret
+</span></span><span class="line"><span class="ln">11</span><span class="cl">  adminSecretNamespace: default
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  pool: mypool                                                           <span class="c1">#定义ceph存储池</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">  userId: kube
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  userSecretName: ceph-kube-secret
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  userSecretNamespace: default
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  fsType: ext4
+</span></span><span class="line"><span class="ln">17</span><span class="cl">  imageFormat: <span class="s2">&#34;2&#34;</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  imageFeatures: <span class="s2">&#34;layering&#34;</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln">1</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; kubectl apply -f ceph-storageclass.yaml
+</span></span><span class="line"><span class="ln">2</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; kubectl get sc
+</span></span><span class="line"><span class="ln">3</span><span class="cl">NAME                PROVISIONER    AGE
+</span></span><span class="line"><span class="ln">4</span><span class="cl">ceph-storageclass   kubernetes.io/rb   87s
+</span></span></code></pre></div><h4 id="创建pvc">创建pvc</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln"> 1</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; cat ceph-storageclass-pvc.yaml 
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">apiVersion: v1
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">kind: PersistentVolumeClaim
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">metadata:
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  name: ceph-test-claim
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">spec:
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  storageClassName: ceph-storageclass  <span class="c1">#对应storageclass的名称</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  accessModes:
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    - ReadWriteOnce
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  resources:
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    requests:
+</span></span><span class="line"><span class="ln">12</span><span class="cl">      storage: 5Gi                    <span class="c1">#申请5G空间的存储空间</span>
+</span></span></code></pre></div><blockquote>
+<ul>
+<li>ReadWriteOnce: 读写权限，并且只能被单个Node挂载</li>
+<li>ReadOnlyMany:只读权限，允许被多个Node挂载</li>
+<li>ReadWriteMany:读写权限，允许被多个Node挂载</li>
+</ul>
+</blockquote>
+<h4 id="创建测试pod">创建测试pod</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln"> 1</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; cat ceph-busybox-pod.yaml 
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">apiVersion: v1
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">kind: Pod
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">metadata:
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  name: ceph-pod
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">spec:
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  containers:
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  - name: ceph-busybox
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    image: busybox:1.32.0
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    command: <span class="o">[</span><span class="s2">&#34;/bin/sh&#34;</span>,<span class="s2">&#34;-c&#34;</span>,<span class="s2">&#34;tail -f /etc/resolv.conf&#34;</span><span class="o">]</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    volumeMounts:
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    - name: ceph-volume
+</span></span><span class="line"><span class="ln">13</span><span class="cl">      mountPath: /usr/share/busybox
+</span></span><span class="line"><span class="ln">14</span><span class="cl">      readOnly: <span class="nb">false</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  volumes:
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  - name: ceph-volume
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    persistentVolumeClaim:
+</span></span><span class="line"><span class="ln">18</span><span class="cl">      claimName: ceph-test-claim
+</span></span></code></pre></div><p>查看pod的状态，如果发现pod并未处于<code>running</code>状态并且事件中有如下的报错。并且k8s集群的各个节点确认已安装与ceph版本一致的<code>ceph-common</code>软件包，这时需要更新<code>storageclass</code>的<code>Provisioner</code>，用外部的提供者代替k8s自带的<code>kubernetes.io/rbd</code>以实现pvc的动态供应。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">rbd: create volume failed, err: failed to create rbd image: executable file not found in $PATH:
+</span></span></code></pre></div><h3 id="排障步骤">排障步骤</h3>
+<p>出现这个报错问题的原因其实很简单：<code>gcr.io</code>中自带的kube-controller-manager镜像没有自带<code>rbd</code>子命令。所以如果是镜像方式启动的<code>kube-controller-manager</code>就会遇到这个问题。</p>
+<p>Github相关issue：<a href="https://github.com/kubernetes/kubernetes/issues/38923" target="_blank" rel="noopener noreffer">Error creating rbd image: executable file not found in $PATH · Issue #38923 · kubernetes/kubernetes · GitHub</a>
+</p>
+<h4 id="部署外部provisioner">部署外部provisioner</h4>
+<p>定义外部的provisioner，由这个provisioner拿之前定义的秘钥创建ceph镜像。同时对外提供<code>ceph.com/rbd</code>的供应者。相关的定义如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln"> 1</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; cat storageclass-fix-deployment.yaml 
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">apiVersion: apps/v1
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">kind: Deployment
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">metadata:
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  name: rbd-provisioner
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  namespace: kube-system
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">spec:
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  replicas: <span class="m">1</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  selector:
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    matchLabels:
+</span></span><span class="line"><span class="ln">11</span><span class="cl">      app: rbd-provisioner
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  strategy:
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    type: Recreate
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  template:
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    metadata:
+</span></span><span class="line"><span class="ln">16</span><span class="cl">      labels:
+</span></span><span class="line"><span class="ln">17</span><span class="cl">        app: rbd-provisioner
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    spec:
+</span></span><span class="line"><span class="ln">19</span><span class="cl">      containers:
+</span></span><span class="line"><span class="ln">20</span><span class="cl">      - name: rbd-provisioner
+</span></span><span class="line"><span class="ln">21</span><span class="cl">        image: <span class="s2">&#34;quay.io/external_storage/rbd-provisioner:latest&#34;</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">        env:
+</span></span><span class="line"><span class="ln">23</span><span class="cl">        - name: PROVISIONER_NAME
+</span></span><span class="line"><span class="ln">24</span><span class="cl">          value: ceph.com/rbd
+</span></span><span class="line"><span class="ln">25</span><span class="cl">      serviceAccountName: persistent-volume-binder               
+</span></span></code></pre></div><blockquote>
+<p>这里必须明确指明<code>ServiceAccountName</code>为<code>persistent-volume-binder</code>，默认的<code>default</code>账户没有权限列出相应资源</p>
+</blockquote>
+<p>创建该deployment资源</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; kubectl apply -f storageclass-fix-deployment.yaml
+</span></span></code></pre></div><h4 id="更新原有storageclass">更新原有storageclass</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="ln">1</span><span class="cl"><span class="nn">...</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="w"></span><span class="nt">metadata</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">ceph-storageclass</span><span class="w">
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="w"></span><span class="c">#provisioner: kubernetes.io/rbd</span><span class="w">
+</span></span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="w"></span><span class="nt">provisioner</span><span class="p">:</span><span class="w"> </span><span class="l">ceph.com/rbd</span><span class="w">
+</span></span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="w"></span><span class="nn">...</span><span class="w">
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln">1</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; kubectl get sc
+</span></span><span class="line"><span class="ln">2</span><span class="cl">NAME                PROVISIONER    AGE
+</span></span><span class="line"><span class="ln">3</span><span class="cl">ceph-storageclass   ceph.com/rbd   64m
+</span></span></code></pre></div><h4 id="重新创建pvc及pod">重新创建pvc及pod</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; kubectl delete -f ceph-storageclass-pvc.yaml <span class="o">&amp;&amp;</span> kubectl apply -f ceph-storageclass-pvc.yaml
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; kubectl delete -f ceph-busybox-pod.yaml <span class="o">&amp;&amp;</span> kubectl apply -f ceph-busybox-pod.yaml
+</span></span></code></pre></div><p>pod成功进入running状态</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="ln">1</span><span class="cl"><span class="l">root ~/k8s/ceph &gt;&gt;&gt; kubectl get pods              </span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="w"></span><span class="l">NAME       READY   STATUS    RESTARTS   AGE</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="w"></span><span class="l">ceph-pod   1/1     Running   0          47s</span><span class="w">
+</span></span></span></code></pre></div><h4 id="验证pv">验证PV</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln">1</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; kubectl get pv
+</span></span><span class="line"><span class="ln">2</span><span class="cl">NAME                                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                     STORAGECLASS        REASON   AGE
+</span></span><span class="line"><span class="ln">3</span><span class="cl">persistentvolume/pvc-9579436e-5122-48c1-871d-2e18b8e42863   5Gi        RWO            Delete           Bound    default/ceph-test-claim   ceph-storageclass            112s
+</span></span></code></pre></div><p>相应的image已映射为块设备挂载到<code>/usr/share/busybox/</code>目录下</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; kubectl exec -it ceph-pod -- /bin/sh
+</span></span><span class="line"><span class="ln">2</span><span class="cl">/ # mount | grep share
+</span></span><span class="line"><span class="ln">3</span><span class="cl">/dev/rbd0 on /usr/share/busybox type ext4 (rw,seclabel,relatime,stripe=1024,data=ordered)
+</span></span></code></pre></div><p>mypool池中顺利生成相应的image</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln">1</span><span class="cl">root ~/k8s/ceph &gt;&gt;&gt; rbd ls -p mypool
+</span></span><span class="line"><span class="ln">2</span><span class="cl">kubernetes-dynamic-pvc-54b5fec8-3e1d-11eb-ab76-925ce2bb963b
+</span></span></code></pre></div><h3 id="常见错误">常见错误</h3>
+<p>1、rbd image无法映射为块设备</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln"> 1</span><span class="cl">Warning  FailedMount             72s <span class="o">(</span>x2 over 2m13s<span class="o">)</span>  kubelet, node-1          MountVolume.WaitForAttach failed <span class="k">for</span> volume <span class="s2">&#34;pvc-c0683658-308a-4fc0-b330-c813c1cad850&#34;</span> : rbd: map failed <span class="nb">exit</span> status 110, rbd output: rbd: sysfs write failed
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">In some cases useful info is found in syslog - try <span class="s2">&#34;dmesg | tail&#34;</span>.
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">rbd: map failed: <span class="o">(</span>110<span class="o">)</span> Connection timed out
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="c1">#对应节点的dmesg日志：</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="o">[</span>843372.414046<span class="o">]</span> libceph: mon1 172.16.200.102:6789 feature <span class="nb">set</span> mismatch, my 106b84a842a42 &lt; server<span class="s1">&#39;s 40106b84a842a42, missing 400000000000000
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="s1">[843372.415663] libceph: mon1 172.16.200.102:6789 missing required protocol features
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="s1">[843382.430314] libceph: mon1 172.16.200.102:6789 feature set mismatch, my 106b84a842a42 &lt; server&#39;</span>s 40106b84a842a42, missing <span class="m">400000000000000</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="o">[</span>843382.432031<span class="o">]</span> libceph: mon1 172.16.200.102:6789 missing required protocol features
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="o">[</span>843393.566967<span class="o">]</span> libceph: mon1 172.16.200.102:6789 feature <span class="nb">set</span> mismatch, my 106b84a842a42 &lt; server<span class="s1">&#39;s 40106b84a842a42, missing 400000000000000
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="s1">[843393.569506] libceph: mon1 172.16.200.102:6789 missing required protocol features
+</span></span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="s1">[843403.421791] libceph: mon2 172.16.200.103:6789 feature set mismatch, my 106b84a842a42 &lt; server&#39;</span>s 40106b84a842a42, missing <span class="m">400000000000000</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="o">[</span>843403.424892<span class="o">]</span> libceph: mon2 172.16.200.103:6789 missing required protocol features
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="o">[</span>843413.405831<span class="o">]</span> libceph: mon0 172.16.200.101:6789 feature <span class="nb">set</span> mismatch, my 106b84a842a42 &lt; server<span class="err">&#39;</span>s 40106b84a842a42, missing <span class="m">400000000000000</span>
+</span></span></code></pre></div><p><strong>原因</strong>：linux内核版本&lt;4.5时不支持feature flag 400000000000000，手动关闭即可。<code>ceph osd crush tunables hammer</code></p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-12-15</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kubernetes/">Kubernetes</a>,&nbsp;<a href="/tags/ceph/">Ceph</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/calico%E4%BF%AE%E6%94%B9podcidr/" class="prev" rel="prev" title="calico修改podCIDR"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>calico修改podCIDR</a>
+            <a href="/posts/ceph%E5%AD%98%E5%82%A8%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/" class="next" rel="next" title="Ceph存储基本使用">Ceph存储基本使用<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
+</div>
+<div id="comments"><div id="valine" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://valine.js.org/">Valine</a>.
+            </noscript></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork">
+				Powered By <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" width="20" height="10" style="fill: #ff6a00" class="sc-CB-bczRLJ CB-fQyPEP"><path d="M21.4 22.4h21.2v-4.8H21.4z"></path><path d="M53.3 0H39.2l3.4 4.8L52.9 8c1.9.6 3.1 2.3 3.1 4.3v15.4c0 2-1.2 3.7-3.1 4.3l-10.3 3.2-3.4 4.8h14.1c6 0 10.7-4.8 10.7-10.7V10.7C64 4.7 59.2 0 53.3 0M10.7 0h14.1l-3.4 4.8L11.1 8A4.5 4.5 0 0 0 8 12.3v15.4c0 2 1.2 3.7 3.1 4.3l10.3 3.2 3.4 4.8H10.7C4.7 40 0 35.2 0 29.3V10.7C0 4.7 4.8 0 10.7 0"></path></svg><a href="https://www.aliyun.com">Aliyun</a><br /><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2019 - 2023</span><span class="icp-splitter">&nbsp;|&nbsp;</span><br class="icp-br"/>
+                    <span class="icp">苏ICP备19065273号</span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/valine/valine.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/valine@1.4.18/dist/Valine.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/algoliasearch@4.13.0/dist/algoliasearch-lite.umd.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":50},"comment":{"valine":{"appId":"IyRdCooou4lRgtrqYYEIDgRK-gzGzoHsz","appKey":"3hXIq4IuQBcg76WWjetWOrMO","avatar":"mp","el":"#valine","emojiCDN":"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/","emojiMaps":{"100":"1f4af.png","alien":"1f47d.png","anger":"1f4a2.png","angry":"1f620.png","anguished":"1f627.png","astonished":"1f632.png","black_heart":"1f5a4.png","blue_heart":"1f499.png","blush":"1f60a.png","bomb":"1f4a3.png","boom":"1f4a5.png","broken_heart":"1f494.png","brown_heart":"1f90e.png","clown_face":"1f921.png","cold_face":"1f976.png","cold_sweat":"1f630.png","confounded":"1f616.png","confused":"1f615.png","cry":"1f622.png","crying_cat_face":"1f63f.png","cupid":"1f498.png","dash":"1f4a8.png","disappointed":"1f61e.png","disappointed_relieved":"1f625.png","dizzy":"1f4ab.png","dizzy_face":"1f635.png","drooling_face":"1f924.png","exploding_head":"1f92f.png","expressionless":"1f611.png","face_vomiting":"1f92e.png","face_with_cowboy_hat":"1f920.png","face_with_hand_over_mouth":"1f92d.png","face_with_head_bandage":"1f915.png","face_with_monocle":"1f9d0.png","face_with_raised_eyebrow":"1f928.png","face_with_rolling_eyes":"1f644.png","face_with_symbols_on_mouth":"1f92c.png","face_with_thermometer":"1f912.png","fearful":"1f628.png","flushed":"1f633.png","frowning":"1f626.png","ghost":"1f47b.png","gift_heart":"1f49d.png","green_heart":"1f49a.png","grimacing":"1f62c.png","grin":"1f601.png","grinning":"1f600.png","hankey":"1f4a9.png","hear_no_evil":"1f649.png","heart":"2764-fe0f.png","heart_decoration":"1f49f.png","heart_eyes":"1f60d.png","heart_eyes_cat":"1f63b.png","heartbeat":"1f493.png","heartpulse":"1f497.png","heavy_heart_exclamation_mark_ornament":"2763-fe0f.png","hole":"1f573-fe0f.png","hot_face":"1f975.png","hugging_face":"1f917.png","hushed":"1f62f.png","imp":"1f47f.png","innocent":"1f607.png","japanese_goblin":"1f47a.png","japanese_ogre":"1f479.png","joy":"1f602.png","joy_cat":"1f639.png","kiss":"1f48b.png","kissing":"1f617.png","kissing_cat":"1f63d.png","kissing_closed_eyes":"1f61a.png","kissing_heart":"1f618.png","kissing_smiling_eyes":"1f619.png","laughing":"1f606.png","left_speech_bubble":"1f5e8-fe0f.png","love_letter":"1f48c.png","lying_face":"1f925.png","mask":"1f637.png","money_mouth_face":"1f911.png","nauseated_face":"1f922.png","nerd_face":"1f913.png","neutral_face":"1f610.png","no_mouth":"1f636.png","open_mouth":"1f62e.png","orange_heart":"1f9e1.png","partying_face":"1f973.png","pensive":"1f614.png","persevere":"1f623.png","pleading_face":"1f97a.png","pouting_cat":"1f63e.png","purple_heart":"1f49c.png","rage":"1f621.png","relaxed":"263a-fe0f.png","relieved":"1f60c.png","revolving_hearts":"1f49e.png","right_anger_bubble":"1f5ef-fe0f.png","robot_face":"1f916.png","rolling_on_the_floor_laughing":"1f923.png","scream":"1f631.png","scream_cat":"1f640.png","see_no_evil":"1f648.png","shushing_face":"1f92b.png","skull":"1f480.png","skull_and_crossbones":"2620-fe0f.png","sleeping":"1f634.png","sleepy":"1f62a.png","slightly_frowning_face":"1f641.png","slightly_smiling_face":"1f642.png","smile":"1f604.png","smile_cat":"1f638.png","smiley":"1f603.png","smiley_cat":"1f63a.png","smiling_face_with_3_hearts":"1f970.png","smiling_imp":"1f608.png","smirk":"1f60f.png","smirk_cat":"1f63c.png","sneezing_face":"1f927.png","sob":"1f62d.png","space_invader":"1f47e.png","sparkling_heart":"1f496.png","speak_no_evil":"1f64a.png","speech_balloon":"1f4ac.png","star-struck":"1f929.png","stuck_out_tongue":"1f61b.png","stuck_out_tongue_closed_eyes":"1f61d.png","stuck_out_tongue_winking_eye":"1f61c.png","sunglasses":"1f60e.png","sweat":"1f613.png","sweat_drops":"1f4a6.png","sweat_smile":"1f605.png","thinking_face":"1f914.png","thought_balloon":"1f4ad.png","tired_face":"1f62b.png","triumph":"1f624.png","two_hearts":"1f495.png","unamused":"1f612.png","upside_down_face":"1f643.png","weary":"1f629.png","white_frowning_face":"2639-fe0f.png","white_heart":"1f90d.png","wink":"1f609.png","woozy_face":"1f974.png","worried":"1f61f.png","yawning_face":"1f971.png","yellow_heart":"1f49b.png","yum":"1f60b.png","zany_face":"1f92a.png","zipper_mouth_face":"1f910.png","zzz":"1f4a4.png"},"enableQQ":false,"highlight":true,"lang":"zh-CN","pageSize":10,"placeholder":"你的评论 ...","recordIP":true,"serverURLs":"https://iyrdcooo.lc-cn-n1-shared.com","visitor":true}},"search":{"algoliaAppID":"RALZ9QXE5X","algoliaIndex":"search","algoliaSearchKey":"edb3145c2e9fe9c9c4eb49630c0dc4f6","highlightTag":"em","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":30,"type":"algolia"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

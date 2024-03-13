@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Vim编辑器的详细用法 - 御秋博客</title><meta name="Description" content="Hugo theme - LoveIt"><meta property="og:title" content="Vim编辑器的详细用法" />
+<meta property="og:description" content="vim编辑器是Linux系统自带的编辑器，其操作较一般的编辑器要复杂许多，但熟练运用vim会极大地提升Linux系统下编辑文本的速度。看完本文赶紧去试下吧！" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://www.freethinker.top/posts/vim%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E8%AF%A6%E7%BB%86%E7%94%A8%E6%B3%95/" /><meta property="og:image" content="https://www.freethinker.top/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2019-11-18T23:10:13+00:00" />
+<meta property="article:modified_time" content="2019-11-18T23:10:13+00:00" /><meta property="og:site_name" content="御秋博客" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://www.freethinker.top/logo.png"/>
+
+<meta name="twitter:title" content="Vim编辑器的详细用法"/>
+<meta name="twitter:description" content="vim编辑器是Linux系统自带的编辑器，其操作较一般的编辑器要复杂许多，但熟练运用vim会极大地提升Linux系统下编辑文本的速度。看完本文赶紧去试下吧！"/>
+<meta name="application-name" content="御秋博客">
+<meta name="apple-mobile-web-app-title" content="御秋博客"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://www.freethinker.top/posts/vim%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E8%AF%A6%E7%BB%86%E7%94%A8%E6%B3%95/" /><link rel="next" href="https://www.freethinker.top/posts/centos%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85mysql8.0/" /><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Vim编辑器的详细用法",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/www.freethinker.top\/posts\/vim%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E8%AF%A6%E7%BB%86%E7%94%A8%E6%B3%95\/"
+        },"image": ["https:\/\/www.freethinker.top\/images\/Apple-Devices-Preview.png"],"genre": "posts","keywords": "Linux","wordcount":  317 ,
+        "url": "https:\/\/www.freethinker.top\/posts\/vim%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E8%AF%A6%E7%BB%86%E7%94%A8%E6%B3%95\/","datePublished": "2019-11-18T23:10:13+00:00","dateModified": "2019-11-18T23:10:13+00:00","publisher": {
+            "@type": "Organization",
+            "name": "xxxx","logo": "https:\/\/www.freethinker.top\/images\/avatar.png"},"author": {
+                "@type": "Person",
+                "name": "ltzhang"
+            },"description": ""
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="御秋博客">御秋博客</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="御秋博客">御秋博客</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><div class="search-dropdown desktop">
+        <div id="search-dropdown-desktop"></div>
+    </div>
+    <div class="search-dropdown mobile">
+        <div id="search-dropdown-mobile"></div>
+    </div><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Vim编辑器的详细用法</h1><div class="post-meta">
+            <div class="post-meta-line">&nbsp;<span class="post-category">收录于 <a href="/categories/linux/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Linux</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2019-11-18">2019-11-18</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;约 317 字&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;预计阅读 2 分钟&nbsp;<span id="/posts/vim%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E8%AF%A6%E7%BB%86%E7%94%A8%E6%B3%95/" class="leancloud_visitors" data-flag-title="Vim编辑器的详细用法">
+                        <i class="far fa-eye fa-fw" aria-hidden="true"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;次阅读
+                    </span>&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#vim模式介绍">vim模式介绍</a></li>
+        <li><a href="#vim的基本操作">vim的基本操作</a>
+          <ul>
+            <li><a href="#打开文件">打开文件</a></li>
+            <li><a href="#多文件">多文件</a></li>
+            <li><a href="#插入">插入</a></li>
+            <li><a href="#查找">查找</a></li>
+            <li><a href="#替换命令">替换命令</a></li>
+            <li><a href="#撤销与重做">撤销与重做</a></li>
+            <li><a href="#删除">删除</a></li>
+            <li><a href="#复制粘贴">复制粘贴</a></li>
+            <li><a href="#保存及退出">保存及退出</a></li>
+            <li><a href="#移动">移动</a></li>
+            <li><a href="#可视化">可视化</a></li>
+            <li><a href="#其他操作">其他操作</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>vim编辑器是Linux系统自带的编辑器，其操作较一般的编辑器要复杂许多，但熟练运用vim会极大地提升Linux系统下编辑文本的速度。看完本文赶紧去试下吧！</p>
+<h3 id="vim模式介绍">vim模式介绍</h3>
+<p>vim有三种模式，分别为命令模式(command mode)，编辑模式(insert mode)及末行模式(last line mode)。我们在刚进入vim编辑器时为命令模式，在按下a时会进入编辑模式，同时屏幕的左下角会显示INSERT，此时就可以输入你想要的文字。在完成输入操作后，按下Esc键会退回到命令模式，此时按下 <strong>:</strong> 就会进入末行模式,其实就是vim的命令行模式，在此模式按下wq就可以保存文件并退出了。
+<img src="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/vim模式.png" width="600" hegiht="350" align=center /></p>
+<blockquote>
+<p>下文中命令前出现 <strong>:</strong> 均表示在末行模式中执行</p>
+</blockquote>
+<h3 id="vim的基本操作">vim的基本操作</h3>
+<h4 id="打开文件">打开文件</h4>
+<p>打开单个文件或者新建单个文件:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">vim FILENAME
+</span></span></code></pre></div><p>不保存对文章的改动重新编辑文件 = <code>:q!+vim FILENAME</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">:e!
+</span></span></code></pre></div><p>编辑文件1时不保存退出编辑文件2:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">:open FILENAME2
+</span></span></code></pre></div><h4 id="多文件">多文件</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">:sp file      新建窗口打开 filename 并水平分割窗口
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">:vsp file     新缓窗口打开 filename 并垂直分割窗口
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">Ctrl + ws     水平分割窗口
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Ctrl + wv     垂直分割窗口
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">Ctrl + ww     在窗口间切换
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Ctrl + wq     关闭窗口
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Ctrl + wh     切换到右侧窗口
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Ctrl + wl     切换到左侧窗口
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Ctrl + wj     切换到下侧窗口
+</span></span><span class="line"><span class="ln">12</span><span class="cl">Ctrl + wk     切换到上侧窗口
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">:qall!        不保存退出所有窗口
+</span></span></code></pre></div><h4 id="插入">插入</h4>
+<p>在命令模式下键入a，A，i，I，o，O均会使vim进入编辑模式，区别在于：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">i       在当前位置的前插入新的字符  
+</span></span><span class="line"><span class="ln">2</span><span class="cl">I       在当前行的行首插入新的字符
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">a       在当前位置的后面插入新的字符  
+</span></span><span class="line"><span class="ln">5</span><span class="cl">A       在当前行的行尾插入新的字符
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl">o       在当前行的下面插入一个新行  
+</span></span><span class="line"><span class="ln">8</span><span class="cl">O       在当前行的上面插入一个新行  
+</span></span></code></pre></div><h4 id="查找">查找</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">/pattern          向下搜索pattern
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">?pattern          向上搜索pattern
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">vim中搜索特殊字符需要进行转义包括 . \ * [] / ? ~ $ % ^ *等
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">光标选择某个单词,按住Shift+3，即可把所有的单词标注出来
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">n                 切换下一个搜索结果
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">N                 切换上一个搜索结果
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">:noh              取消搜索结果的高亮显示 
+</span></span></code></pre></div><h4 id="替换命令">替换命令</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">:s/old/new         用new去替换当前行匹配到的第一个old
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">:%s/old/new        用new去替换全文各行的第一个old
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl">:s/old/new/g       用new替换当前行的所有old
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl">:s/old/new/g       将全文中的old用new替换
+</span></span></code></pre></div><p>此外还可以指定行数进行替换：
+如要替换11-23行所有的old，可以键入如下指令:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">:11,23 s/old/new/g
+</span></span></code></pre></div><p>若要在23-35行所有行前加4个空格以示缩进，可以键入如下指令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">:23,35 s/^/    /g
+</span></span></code></pre></div><h4 id="撤销与重做">撤销与重做</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">u        撤销上一步操作  
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Ctrl+r   重做，即对撤销的撤销
+</span></span></code></pre></div><h4 id="删除">删除</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">x        删除当前字符，即光标在哪个位置就删除那个位置的字符  
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">5x       从当前光标开始往后删除5个字符  
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">X        删除当前字符前的一个字符  
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">5X       从当前光标往前删除5个字符（不包括当前字符）  
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">d$       删除当前字符至行尾所有单词  
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">d^       删除当前字符至行首前的所有字符（不包括当前字符）
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">dw       删除当前字符至单词尾部  
+</span></span><span class="line"><span class="ln">11</span><span class="cl">daw      删除光标所在的单词
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl">dd       删除光标所在行的整行    
+</span></span><span class="line"><span class="ln">14</span><span class="cl">ndd      删除光标所在行及其下共5行  
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  
+</span></span><span class="line"><span class="ln">16</span><span class="cl">S        删除当前行并进入编辑模式 
+</span></span><span class="line"><span class="ln">17</span><span class="cl"> 
+</span></span><span class="line"><span class="ln">18</span><span class="cl">dgg      删除当前行至文档首部的所有行  效果等同于末行模式下的:1,.d  
+</span></span><span class="line"><span class="ln">19</span><span class="cl">dG       删除当前行至文档尾部的所有行  效果等同于末行模式下的:.,$d($表示最后一行)
+</span></span></code></pre></div><p>末行模式下还可以进行更加复杂的操作而不需要考虑光标的位置
+如删除第11行至34行的操作就可以这样</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">:11,34d  
+</span></span></code></pre></div><h4 id="复制粘贴">复制粘贴</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">yy       复制光标所在的当前行
+</span></span><span class="line"><span class="ln">2</span><span class="cl">5yy      复制光标及下面共5行  
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  
+</span></span><span class="line"><span class="ln">4</span><span class="cl">yG       复制当前行至文档开始的所有行
+</span></span><span class="line"><span class="ln">5</span><span class="cl">ygg      复制当前行至文档结束的所有行  
+</span></span><span class="line"><span class="ln">6</span><span class="cl">  
+</span></span><span class="line"><span class="ln">7</span><span class="cl">yw       复制当前光标所在处的一个单词  
+</span></span><span class="line"><span class="ln">8</span><span class="cl">
+</span></span><span class="line"><span class="ln">9</span><span class="cl">J        将下一行内容移动到本行的末尾
+</span></span></code></pre></div><p>同样的在末行模式下也可以跨行复制，如复制11至34行</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">:11,34y  
+</span></span></code></pre></div><p>把10至23行的内容移动到56行之后，可以使用</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">:10,23 m 56
+</span></span></code></pre></div><p>使用p把dd删除或yy复制的内容粘贴出来</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">p        在当前行的下面粘贴  
+</span></span><span class="line"><span class="ln">2</span><span class="cl">P        在当前行的上面粘贴  
+</span></span></code></pre></div><p><strong>快速操作</strong>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">ddp      快速交换当前行及下一行  
+</span></span><span class="line"><span class="ln">2</span><span class="cl">yyp      快速复制当前行并粘贴
+</span></span></code></pre></div><h4 id="保存及退出">保存及退出</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">:wq      保存并退出  
+</span></span><span class="line"><span class="ln">2</span><span class="cl">:x       保存并退出
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">:q       直接退出  
+</span></span><span class="line"><span class="ln">5</span><span class="cl">:q!      强制退出不做更改  
+</span></span><span class="line"><span class="ln">6</span><span class="cl"> 
+</span></span><span class="line"><span class="ln">7</span><span class="cl">zz       保存并退出 
+</span></span></code></pre></div><h4 id="移动">移动</h4>
+<p>移动操作并不常用，毕竟↑↓←→键就可以完成而且无需记忆</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">h   光标向←移动1个字符     10h   光标向←移动10个字符  
+</span></span><span class="line"><span class="ln">2</span><span class="cl">l   光标向→移动1个字符     10l   光标向→移动10个字符  
+</span></span><span class="line"><span class="ln">3</span><span class="cl">j   光标向↑移动1个字符     10j   光标向↑移动10个字符  
+</span></span><span class="line"><span class="ln">4</span><span class="cl">k   光标向↓移动1个字符     10k   光标向↓移动10个字符 
+</span></span><span class="line"><span class="ln">5</span><span class="cl">
+</span></span><span class="line"><span class="ln">6</span><span class="cl">gg   移动到文档头部，等同于:1 
+</span></span><span class="line"><span class="ln">7</span><span class="cl">G    移动到文档尾部，等同于:$
+</span></span></code></pre></div><p>当然你也可以在打开文件时就指定行数，比如想打开文件时直接到最后一行，可以使用</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">vim + FILENAME  
+</span></span></code></pre></div><p>打开文件直接到哪一行</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">vim +n FILENAME #打开文件直接到第n行，而不用打开文件后在移动光标  
+</span></span></code></pre></div><h4 id="可视化">可视化</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">v              进入可视化，左下角显示可视化或者VISUAL
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">V              进入可视行，左下角显示可视行或者VISUAL LINE
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Ctrl+v         进入可视块，左下角显示可视块或者VISUAL BLOCK
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">上述选择使用上下左右键，非鼠标
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">d             删除选中文本
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">y             复制选中文本
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">gu            选中区域转为小写
+</span></span><span class="line"><span class="ln">10</span><span class="cl">gU            选中区域转为大写
+</span></span><span class="line"><span class="ln">11</span><span class="cl">g~            大小写互调
+</span></span><span class="line"><span class="ln">12</span><span class="cl">&gt;             向右缩进一个单位
+</span></span><span class="line"><span class="ln">13</span><span class="cl">&lt;             向左缩进一个单位
+</span></span></code></pre></div><h4 id="其他操作">其他操作</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">:!COMMAND执行命令，如:!ls会列出本文档当前目录的所有文件而不用退出文档
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">:suspend或Crtl-Z挂起vim，回到shell，可以使用fg返回vim编辑器 
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"> 
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">:set nu 设置行号，可将此命令写入vim的配置文件/etc/vimrc或者~/.vimrc，就可以保证每次打开都显示行数  
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">:set ff=unix 设置文档的dos编码为unix风格，在vim打开乱码时可以尝试使用该命令修正 
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">:set syntax=? 设置文档的语言为？，如c，python，sh 
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">:set syntax获得目前的文档语言
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl">:set paste  解决复制文字来时缩进乱的问题
+</span></span></code></pre></div><p><strong>复杂注释</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">:3,10 s/^/#/g       注释3至5行
+</span></span><span class="line"><span class="ln">2</span><span class="cl">:3,10 s/^#//g       取消注释3至10行
+</span></span><span class="line"><span class="ln">3</span><span class="cl">:1,$ s/^/#/g        注释整个文档
+</span></span><span class="line"><span class="ln">4</span><span class="cl">:1,$ s/^#//g        取消注释整个文档 #全选整篇文档也可使用%来替换
+</span></span></code></pre></div></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2019-11-18</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/linux/">Linux</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav">
+            <a href="/posts/centos%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85mysql8.0/" class="next" rel="next" title="CentOS编译安装MySQL8.0">CentOS编译安装MySQL8.0<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
+</div>
+<div id="comments"><div id="valine" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://valine.js.org/">Valine</a>.
+            </noscript></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork">
+				Powered By <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" width="20" height="10" style="fill: #ff6a00" class="sc-CB-bczRLJ CB-fQyPEP"><path d="M21.4 22.4h21.2v-4.8H21.4z"></path><path d="M53.3 0H39.2l3.4 4.8L52.9 8c1.9.6 3.1 2.3 3.1 4.3v15.4c0 2-1.2 3.7-3.1 4.3l-10.3 3.2-3.4 4.8h14.1c6 0 10.7-4.8 10.7-10.7V10.7C64 4.7 59.2 0 53.3 0M10.7 0h14.1l-3.4 4.8L11.1 8A4.5 4.5 0 0 0 8 12.3v15.4c0 2 1.2 3.7 3.1 4.3l10.3 3.2 3.4 4.8H10.7C4.7 40 0 35.2 0 29.3V10.7C0 4.7 4.8 0 10.7 0"></path></svg><a href="https://www.aliyun.com">Aliyun</a><br /><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2019 - 2023</span><span class="icp-splitter">&nbsp;|&nbsp;</span><br class="icp-br"/>
+                    <span class="icp">苏ICP备19065273号</span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/valine/valine.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/valine@1.4.18/dist/Valine.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/algoliasearch@4.13.0/dist/algoliasearch-lite.umd.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":50},"comment":{"valine":{"appId":"IyRdCooou4lRgtrqYYEIDgRK-gzGzoHsz","appKey":"3hXIq4IuQBcg76WWjetWOrMO","avatar":"mp","el":"#valine","emojiCDN":"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/","emojiMaps":{"100":"1f4af.png","alien":"1f47d.png","anger":"1f4a2.png","angry":"1f620.png","anguished":"1f627.png","astonished":"1f632.png","black_heart":"1f5a4.png","blue_heart":"1f499.png","blush":"1f60a.png","bomb":"1f4a3.png","boom":"1f4a5.png","broken_heart":"1f494.png","brown_heart":"1f90e.png","clown_face":"1f921.png","cold_face":"1f976.png","cold_sweat":"1f630.png","confounded":"1f616.png","confused":"1f615.png","cry":"1f622.png","crying_cat_face":"1f63f.png","cupid":"1f498.png","dash":"1f4a8.png","disappointed":"1f61e.png","disappointed_relieved":"1f625.png","dizzy":"1f4ab.png","dizzy_face":"1f635.png","drooling_face":"1f924.png","exploding_head":"1f92f.png","expressionless":"1f611.png","face_vomiting":"1f92e.png","face_with_cowboy_hat":"1f920.png","face_with_hand_over_mouth":"1f92d.png","face_with_head_bandage":"1f915.png","face_with_monocle":"1f9d0.png","face_with_raised_eyebrow":"1f928.png","face_with_rolling_eyes":"1f644.png","face_with_symbols_on_mouth":"1f92c.png","face_with_thermometer":"1f912.png","fearful":"1f628.png","flushed":"1f633.png","frowning":"1f626.png","ghost":"1f47b.png","gift_heart":"1f49d.png","green_heart":"1f49a.png","grimacing":"1f62c.png","grin":"1f601.png","grinning":"1f600.png","hankey":"1f4a9.png","hear_no_evil":"1f649.png","heart":"2764-fe0f.png","heart_decoration":"1f49f.png","heart_eyes":"1f60d.png","heart_eyes_cat":"1f63b.png","heartbeat":"1f493.png","heartpulse":"1f497.png","heavy_heart_exclamation_mark_ornament":"2763-fe0f.png","hole":"1f573-fe0f.png","hot_face":"1f975.png","hugging_face":"1f917.png","hushed":"1f62f.png","imp":"1f47f.png","innocent":"1f607.png","japanese_goblin":"1f47a.png","japanese_ogre":"1f479.png","joy":"1f602.png","joy_cat":"1f639.png","kiss":"1f48b.png","kissing":"1f617.png","kissing_cat":"1f63d.png","kissing_closed_eyes":"1f61a.png","kissing_heart":"1f618.png","kissing_smiling_eyes":"1f619.png","laughing":"1f606.png","left_speech_bubble":"1f5e8-fe0f.png","love_letter":"1f48c.png","lying_face":"1f925.png","mask":"1f637.png","money_mouth_face":"1f911.png","nauseated_face":"1f922.png","nerd_face":"1f913.png","neutral_face":"1f610.png","no_mouth":"1f636.png","open_mouth":"1f62e.png","orange_heart":"1f9e1.png","partying_face":"1f973.png","pensive":"1f614.png","persevere":"1f623.png","pleading_face":"1f97a.png","pouting_cat":"1f63e.png","purple_heart":"1f49c.png","rage":"1f621.png","relaxed":"263a-fe0f.png","relieved":"1f60c.png","revolving_hearts":"1f49e.png","right_anger_bubble":"1f5ef-fe0f.png","robot_face":"1f916.png","rolling_on_the_floor_laughing":"1f923.png","scream":"1f631.png","scream_cat":"1f640.png","see_no_evil":"1f648.png","shushing_face":"1f92b.png","skull":"1f480.png","skull_and_crossbones":"2620-fe0f.png","sleeping":"1f634.png","sleepy":"1f62a.png","slightly_frowning_face":"1f641.png","slightly_smiling_face":"1f642.png","smile":"1f604.png","smile_cat":"1f638.png","smiley":"1f603.png","smiley_cat":"1f63a.png","smiling_face_with_3_hearts":"1f970.png","smiling_imp":"1f608.png","smirk":"1f60f.png","smirk_cat":"1f63c.png","sneezing_face":"1f927.png","sob":"1f62d.png","space_invader":"1f47e.png","sparkling_heart":"1f496.png","speak_no_evil":"1f64a.png","speech_balloon":"1f4ac.png","star-struck":"1f929.png","stuck_out_tongue":"1f61b.png","stuck_out_tongue_closed_eyes":"1f61d.png","stuck_out_tongue_winking_eye":"1f61c.png","sunglasses":"1f60e.png","sweat":"1f613.png","sweat_drops":"1f4a6.png","sweat_smile":"1f605.png","thinking_face":"1f914.png","thought_balloon":"1f4ad.png","tired_face":"1f62b.png","triumph":"1f624.png","two_hearts":"1f495.png","unamused":"1f612.png","upside_down_face":"1f643.png","weary":"1f629.png","white_frowning_face":"2639-fe0f.png","white_heart":"1f90d.png","wink":"1f609.png","woozy_face":"1f974.png","worried":"1f61f.png","yawning_face":"1f971.png","yellow_heart":"1f49b.png","yum":"1f60b.png","zany_face":"1f92a.png","zipper_mouth_face":"1f910.png","zzz":"1f4a4.png"},"enableQQ":false,"highlight":true,"lang":"zh-CN","pageSize":10,"placeholder":"你的评论 ...","recordIP":true,"serverURLs":"https://iyrdcooo.lc-cn-n1-shared.com","visitor":true}},"search":{"algoliaAppID":"RALZ9QXE5X","algoliaIndex":"search","algoliaSearchKey":"edb3145c2e9fe9c9c4eb49630c0dc4f6","highlightTag":"em","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":30,"type":"algolia"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

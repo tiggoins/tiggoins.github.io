@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>k8s证书说明及更新方式 - 御秋博客</title><meta name="Description" content="Hugo theme - LoveIt"><meta property="og:title" content="k8s证书说明及更新方式" />
+<meta property="og:description" content="本篇文章主要介绍k8s集群中证书的作用位置，并且以创建pod和exec为例说明证书调用，最后写了部署监控证书有效期的步骤。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://www.freethinker.top/posts/k8s%E8%AF%81%E4%B9%A6%E8%AF%B4%E6%98%8E%E5%8F%8A%E6%9B%B4%E6%96%B0%E6%96%B9%E5%BC%8F/" /><meta property="og:image" content="https://www.freethinker.top/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-05-09T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-05-09T00:00:00+00:00" /><meta property="og:site_name" content="御秋博客" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://www.freethinker.top/logo.png"/>
+
+<meta name="twitter:title" content="k8s证书说明及更新方式"/>
+<meta name="twitter:description" content="本篇文章主要介绍k8s集群中证书的作用位置，并且以创建pod和exec为例说明证书调用，最后写了部署监控证书有效期的步骤。"/>
+<meta name="application-name" content="御秋博客">
+<meta name="apple-mobile-web-app-title" content="御秋博客"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://www.freethinker.top/posts/k8s%E8%AF%81%E4%B9%A6%E8%AF%B4%E6%98%8E%E5%8F%8A%E6%9B%B4%E6%96%B0%E6%96%B9%E5%BC%8F/" /><link rel="prev" href="https://www.freethinker.top/posts/jumpserver%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/" /><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "k8s证书说明及更新方式",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/www.freethinker.top\/posts\/k8s%E8%AF%81%E4%B9%A6%E8%AF%B4%E6%98%8E%E5%8F%8A%E6%9B%B4%E6%96%B0%E6%96%B9%E5%BC%8F\/"
+        },"image": ["https:\/\/www.freethinker.top\/images\/Apple-Devices-Preview.png"],"genre": "posts","keywords": "Kubernetes","wordcount":  514 ,
+        "url": "https:\/\/www.freethinker.top\/posts\/k8s%E8%AF%81%E4%B9%A6%E8%AF%B4%E6%98%8E%E5%8F%8A%E6%9B%B4%E6%96%B0%E6%96%B9%E5%BC%8F\/","datePublished": "2023-05-09T00:00:00+00:00","dateModified": "2023-05-09T00:00:00+00:00","publisher": {
+            "@type": "Organization",
+            "name": "xxxx","logo": "https:\/\/www.freethinker.top\/images\/avatar.png"},"author": {
+                "@type": "Person",
+                "name": "ltzhang"
+            },"description": ""
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="御秋博客">御秋博客</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="御秋博客">御秋博客</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><div class="search-dropdown desktop">
+        <div id="search-dropdown-desktop"></div>
+    </div>
+    <div class="search-dropdown mobile">
+        <div id="search-dropdown-mobile"></div>
+    </div><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">k8s证书说明及更新方式</h1><div class="post-meta">
+            <div class="post-meta-line">&nbsp;<span class="post-category">收录于 <a href="/categories/kubernetes/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Kubernetes</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2023-05-09">2023-05-09</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;约 514 字&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;预计阅读 3 分钟&nbsp;<span id="/posts/k8s%E8%AF%81%E4%B9%A6%E8%AF%B4%E6%98%8E%E5%8F%8A%E6%9B%B4%E6%96%B0%E6%96%B9%E5%BC%8F/" class="leancloud_visitors" data-flag-title="k8s证书说明及更新方式">
+                        <i class="far fa-eye fa-fw" aria-hidden="true"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;次阅读
+                    </span>&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#证书概述">证书概述</a></li>
+        <li><a href="#证书路径及用途">证书路径及用途</a>
+          <ul>
+            <li><a href="#集群ca证书">集群CA证书</a></li>
+            <li><a href="#服务端证书">服务端证书</a></li>
+            <li><a href="#客户端证书">客户端证书</a></li>
+            <li><a href="#服务账户证书另一种形式的客户端证书">服务账户证书(另一种形式的客户端证书)</a></li>
+            <li><a href="#其他证书">其他证书</a></li>
+          </ul>
+        </li>
+        <li><a href="#证书交互过程">证书交互过程</a>
+          <ul>
+            <li><a href="#以创建pod为例">以创建Pod为例</a></li>
+            <li><a href="#以执行kubectl-exec为例">以执行kubectl exec为例</a></li>
+          </ul>
+        </li>
+        <li><a href="#证书有效期监控">证书有效期监控</a>
+          <ul>
+            <li><a href="#部署ssl_exporter">部署ssl_exporter</a></li>
+            <li><a href="#配置prometheus抓取规则">配置Prometheus抓取规则</a></li>
+            <li><a href="#配置prometheus告警策略">配置Prometheus告警策略</a></li>
+            <li><a href="#配置grafana面板">配置Grafana面板</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>本篇文章主要介绍k8s集群中证书的作用位置，并且以创建pod和exec为例说明证书调用，最后写了部署监控证书有效期的步骤。</p>
+<h3 id="证书概述">证书概述</h3>
+<p>在 Kubernetes 中包含多个以独立进程形式运行的组件，这些组件之间通过 HTTPS/gRPC 相互通信，以协同完成集群中应用的部署和管理工作。</p>
+<figure><img src="../../images/posts/k8s/a57c868383c5fe1a3af1481da60e30ab5df8c4.jpg"/><figcaption>
+            <h4>k8s多master架构</h4>
+        </figcaption>
+</figure>
+
+<p>从图中可以看到，Kubernetes控制平面中包含了etcd，kube-apiserver，kube-scheduler，kube-controller-manager等组件，这些组件会相互进行远程调用，例如 kube-apiserver会调用etcd接口查询或数据，kube-controller-manager会调用kube-apiserver接口查询集群中的对象状态；同时kube-apiserver也会和在工作节点上的kubelet和kube-proxy进行通信，以在工作节点上部署和管理应用。</p>
+<h3 id="证书路径及用途">证书路径及用途</h3>
+<h4 id="集群ca证书">集群CA证书</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">签发者(CN)</th>
+<th style="text-align:center">路径</th>
+<th style="text-align:center">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">kubernetes</td>
+<td style="text-align:center">/etc/kubernetes/ssl/ca.crt</td>
+<td style="text-align:center">Kubernetes 通用 CA</td>
+</tr>
+<tr>
+<td style="text-align:center">etcd-ca</td>
+<td style="text-align:center">/etc/ssl/etcd/ssl/ca.pem</td>
+<td style="text-align:center">与 etcd 相关的所有功能</td>
+</tr>
+<tr>
+<td style="text-align:center">front-proxy-ca</td>
+<td style="text-align:center">/etc/kubernetes/ssl/front-proxy-ca.crt</td>
+<td style="text-align:center">用于前端代理证书签署</td>
+</tr>
+</tbody>
+</table>
+<h4 id="服务端证书">服务端证书</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">签发者</th>
+<th style="text-align:center">证书路径</th>
+<th style="text-align:center">启动命令</th>
+<th style="text-align:center">相关参数或环境变量</th>
+<th style="text-align:center">用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">etcd-ca</td>
+<td style="text-align:center">/etc/ssl/etcd/ssl/member-<nodeName>.pem</td>
+<td style="text-align:center">/usr/local/bin/etcd</td>
+<td style="text-align:center">ETCD_CERT_FILE</td>
+<td style="text-align:center">提供etcd集群的加密访问</td>
+</tr>
+<tr>
+<td style="text-align:center">kubernetes</td>
+<td style="text-align:center">/etc/kubernetes/ssl/apiserver.crt</td>
+<td style="text-align:center">kube-apiserver</td>
+<td style="text-align:center">--tls-cert-file</td>
+<td style="text-align:center">提供kube-apiserver的加密访问</td>
+</tr>
+<tr>
+<td style="text-align:center"><nodeName>-ca@[UnixTimeStamp]</td>
+<td style="text-align:center">/var/lib/kubelet/pki/kubelet.crt</td>
+<td style="text-align:center">无</td>
+<td style="text-align:center">无</td>
+<td style="text-align:center">节点自签证书，提供kubelet的加密访问，<strong>过期不影响集群运行</strong></td>
+</tr>
+</tbody>
+</table>
+<h4 id="客户端证书">客户端证书</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">签发者</th>
+<th style="text-align:center">证书路径</th>
+<th style="text-align:center">启动命令</th>
+<th style="text-align:center">相关参数或环境变量</th>
+<th style="text-align:center">用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">etcd-ca</td>
+<td style="text-align:center">/etc/ssl/etcd/ssl/node-[NodeName].pem</td>
+<td style="text-align:center">kube-apiserver</td>
+<td style="text-align:center">--etcd-certfile</td>
+<td style="text-align:center">kube-apiserver访问etcd的客户端证书</td>
+</tr>
+<tr>
+<td style="text-align:center">kubernetes</td>
+<td style="text-align:center">/etc/kubernetes/ssl/apiserver-kubelet-client.crt</td>
+<td style="text-align:center">kube-apiserver</td>
+<td style="text-align:center">--kubelet-client-certificate</td>
+<td style="text-align:center">kube-apiserver访问kubelet的客户端证书</td>
+</tr>
+<tr>
+<td style="text-align:center">front-proxy-ca</td>
+<td style="text-align:center">/etc/kubernetes/ssl/front-proxy-client.crt</td>
+<td style="text-align:center">kube-apiserver</td>
+<td style="text-align:center">--proxy-client-cert-file</td>
+<td style="text-align:center">前端代理的客户端证书，只有需要支持扩展API服务器时才需要该证书</td>
+</tr>
+</tbody>
+</table>
+<h4 id="服务账户证书另一种形式的客户端证书">服务账户证书(另一种形式的客户端证书)</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">签发者</th>
+<th style="text-align:center">文件路径</th>
+<th style="text-align:center">启动命令</th>
+<th style="text-align:center">相关参数或环境变量</th>
+<th style="text-align:center">用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">kubernetes</td>
+<td style="text-align:center">/etc/kubernetes/admin.conf</td>
+<td style="text-align:center">kubectl</td>
+<td style="text-align:center">无</td>
+<td style="text-align:center">提供给集群管理员操作集群时使用，一般需要复制到<code>$HOME/.kube/config</code></td>
+</tr>
+<tr>
+<td style="text-align:center">kubernetes</td>
+<td style="text-align:center">/etc/kubernetes/controller-manager.conf</td>
+<td style="text-align:center">kube-controller-manager</td>
+<td style="text-align:center">--authentication-kubeconfig</td>
+<td style="text-align:center">提供给kube-controller-manager组件访问kube-apiserver时使用</td>
+</tr>
+<tr>
+<td style="text-align:center">kubernetes</td>
+<td style="text-align:center">/etc/kubernetes/scheduler.conf</td>
+<td style="text-align:center">kube-scheduler</td>
+<td style="text-align:center">--authentication-kubeconfig</td>
+<td style="text-align:center">提供给kube-scheduler组件访问kube-apiserver时使用</td>
+</tr>
+<tr>
+<td style="text-align:center">kubernetes</td>
+<td style="text-align:center">/etc/kubenernetes/kubelet.conf</td>
+<td style="text-align:center">kubelet</td>
+<td style="text-align:center">--kubeconfig</td>
+<td style="text-align:center">提供给kubelet组件访问kube-apiserver时使用</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>注：kubelet.conf中的证书文件实际指向<code>/var/lib/kubelet/pki/kubelet-client-current.pem</code>，该文件是链接文件在kubelet证书滚动更新后自动指向新的文件。</p>
+</blockquote>
+<h4 id="其他证书">其他证书</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">签发者</th>
+<th style="text-align:center">文件路径</th>
+<th style="text-align:center">启动命令</th>
+<th style="text-align:center">相关参数或环境变量</th>
+<th style="text-align:center">用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">etcd-ca</td>
+<td style="text-align:center">/etc/ssl/etcd/ssl/admin-<nodeName>.pem</td>
+<td style="text-align:center">etcdctl</td>
+<td style="text-align:center">--cert</td>
+<td style="text-align:center">提供给管理员直接访问/操作etcd的证书</td>
+</tr>
+</tbody>
+</table>
+<h3 id="证书交互过程">证书交互过程</h3>
+<p>以创建Pod和执行kubectl exec为例说明证书交互的过程</p>
+<h4 id="以创建pod为例">以创建Pod为例</h4>
+<div class="mermaid" id="id-1"></div>
+<p>步骤解析：</p>
+<ol>
+<li>用户通过kubectl提交资源创建请求，此时使用的集群管理证书即$HOME/.kube/config访问kube-apiserver</li>
+<li>kube-apiserver使用客户端证书保存资源到etcd中，此时使用的证书为/etc/ssl/etcd/ssl/node-<nodeName>.pem</li>
+<li>kube-controller-manager检查更新，此时使用kube-controller-manager的客户端证书，即/etc/kubernetes/controller-manager.conf中内嵌的证书</li>
+<li>kube-scheduler观察到需要调度新的Pod，使用客户端证书连接到<code>kube-apiserver</code>，证书位于/etc/kubernetes/scheduler.conf中内嵌的证书</li>
+<li>kube-scheduler通过各种算法计算出调度的节点，计算完成后提交给kube-apiserver，此时使用的证书同第4步中证书</li>
+<li>kube-apiserver保存pod与节点的映射到etcd中，此时使用的证书同第2步中的证书</li>
+<li>kubelet观察到需要在本节点创建新的Pod，证书位于/etc/kubernetes/kubelet.conf中内嵌的证书</li>
+<li>kube-apiserver绑定pod到对应节点的kubelet，此时使用的证书位于/etc/kubernetes/ssl/apiserver-kubelet-client.crt</li>
+<li>kubelet通知容器运行时创建pod</li>
+<li>创建完成后kubelet向kube-apiserver更新状态，证书同第8步</li>
+<li>kube-apiserver保存最新的状态到etcd中，证书同第2步</li>
+</ol>
+<h4 id="以执行kubectl-exec为例">以执行kubectl exec为例</h4>
+<div class="mermaid" id="id-2"></div>
+<p>步骤解析：</p>
+<ol>
+<li>用户执行kubectl exec子命令请求进入容器中执行指令，此时使用的集群管理证书即$HOME/.kube/config访问kube-apiserver</li>
+<li>kube-apiserver使用客户端证书访问kubelet，证书位于/etc/kubernetes/ssl/apiserver-kubelet-client.crt</li>
+<li>kubelet通过gRPC接口访问容器运行时，无需证书</li>
+<li>容器运行时返回执行结果给kubelet</li>
+<li>kubelet返回执行结果给kube-apiserver，此时使用kubelet客户端证书访问kube-apiserver，证书位于/etc/kubernetes/kubelet.conf中内嵌的证书</li>
+<li>呈现执行的结果</li>
+</ol>
+<h3 id="证书有效期监控">证书有效期监控</h3>
+<p>为防止证书过期造成集群不可用，可部署exporter采集各个证书的有效期并且对小于7天的证书进行告警及时通知集群管理员更新证书。</p>
+<h4 id="部署ssl_exporter">部署ssl_exporter</h4>
+<p>部署类型为daemonset</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l">apps/v1</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="w"></span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l">DaemonSet</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="w"></span><span class="nt">metadata</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="w">  </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="w">    </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l">ssl-exporter</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">ssl-exporter</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="w"></span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="w">  </span><span class="nt">selector</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="w">      </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l">ssl-exporter</span><span class="w">
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="w">  </span><span class="nt">template</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="w">    </span><span class="nt">metadata</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="w">      </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="w">        </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l">ssl-exporter</span><span class="w">
+</span></span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="w">    </span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="w">      </span><span class="nt">containers</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="w">      </span>- <span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">reg.kolla.org/library/ssl-exporter:2.4.2</span><span class="w">
+</span></span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="w">        </span><span class="nt">imagePullPolicy</span><span class="p">:</span><span class="w"> </span><span class="l">IfNotPresent</span><span class="w">
+</span></span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">ssl-exporter</span><span class="w">
+</span></span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="w">        </span><span class="nt">resources</span><span class="p">:</span><span class="w"> 
+</span></span></span><span class="line"><span class="ln">21</span><span class="cl"><span class="w">          </span><span class="nt">limits</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="w">            </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="l">250m</span><span class="w">
+</span></span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="w">            </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l">256Mi</span><span class="w">
+</span></span></span><span class="line"><span class="ln">24</span><span class="cl"><span class="w">          </span><span class="nt">requests</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="w">            </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="l">100m</span><span class="w">
+</span></span></span><span class="line"><span class="ln">26</span><span class="cl"><span class="w">            </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l">128Mi</span><span class="w">
+</span></span></span><span class="line"><span class="ln">27</span><span class="cl"><span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">28</span><span class="cl"><span class="w">        </span>- <span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l">/host/etc/kubernetes</span><span class="w">
+</span></span></span><span class="line"><span class="ln">29</span><span class="cl"><span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">k8s-certs</span><span class="w">
+</span></span></span><span class="line"><span class="ln">30</span><span class="cl"><span class="w">          </span><span class="nt">readOnly</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="ln">31</span><span class="cl"><span class="w">        </span>- <span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l">/host/var/lib/kubelet/pki</span><span class="w">
+</span></span></span><span class="line"><span class="ln">32</span><span class="cl"><span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">kubelet-certs</span><span class="w">
+</span></span></span><span class="line"><span class="ln">33</span><span class="cl"><span class="w">          </span><span class="nt">readOnly</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="ln">34</span><span class="cl"><span class="w">      </span><span class="nt">hostNetwork</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="ln">35</span><span class="cl"><span class="w">      </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">36</span><span class="cl"><span class="w">      </span>- <span class="nt">hostPath</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">37</span><span class="cl"><span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l">/etc/kubernetes</span><span class="w">
+</span></span></span><span class="line"><span class="ln">38</span><span class="cl"><span class="w">          </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">39</span><span class="cl"><span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">k8s-certs</span><span class="w">
+</span></span></span><span class="line"><span class="ln">40</span><span class="cl"><span class="w">      </span>- <span class="nt">hostPath</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">41</span><span class="cl"><span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l">/var/lib/kubelet/pki</span><span class="w">
+</span></span></span><span class="line"><span class="ln">42</span><span class="cl"><span class="w">          </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">43</span><span class="cl"><span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">kubelet-certs</span><span class="w">
+</span></span></span></code></pre></div><h4 id="配置prometheus抓取规则">配置Prometheus抓取规则</h4>
+<p>由于服务证书暂不能使用通配符，各个服务账户证书需手动配置策略。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nt">scrape_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="w"></span>- <span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;ssl-k8s-file&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="w">  </span><span class="nt">metrics_path</span><span class="p">:</span><span class="w"> </span><span class="l">/probe</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="w">  </span><span class="nt">params</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="w">    </span><span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;file&#34;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;/host/etc/kubernetes/ssl/*.crt&#34;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="w">  </span><span class="nt">kubernetes_sd_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="w">  </span>- <span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l">node</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="w">  </span><span class="nt">relabel_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="w">  </span>- <span class="nt">source_labels</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">__address__]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="w">    </span><span class="nt">regex</span><span class="p">:</span><span class="w"> </span><span class="l">^(.*):(.*)$</span><span class="w">
+</span></span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="w">    </span><span class="nt">target_label</span><span class="p">:</span><span class="w"> </span><span class="l">__address__</span><span class="w">
+</span></span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="w">    </span><span class="nt">replacement</span><span class="p">:</span><span class="w"> </span><span class="l">${1}:9219</span><span class="w">
+</span></span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="w"></span>- <span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;ssl-kubelet-file&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="w">  </span><span class="nt">metrics_path</span><span class="p">:</span><span class="w"> </span><span class="l">/probe</span><span class="w">
+</span></span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="w">  </span><span class="nt">params</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="w">    </span><span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;file&#34;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> 
+</span></span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="w">      </span>- <span class="s2">&#34;/host/var/lib/kubelet/pki/*.crt&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">21</span><span class="cl"><span class="w">  </span><span class="nt">kubernetes_sd_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="w">  </span>- <span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l">node</span><span class="w">
+</span></span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="w">  </span><span class="nt">relabel_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">24</span><span class="cl"><span class="w">  </span>- <span class="nt">source_labels</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">__address__]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="w">    </span><span class="nt">regex</span><span class="p">:</span><span class="w"> </span><span class="l">^(.*):(.*)$</span><span class="w">
+</span></span></span><span class="line"><span class="ln">26</span><span class="cl"><span class="w">    </span><span class="nt">target_label</span><span class="p">:</span><span class="w"> </span><span class="l">__address__</span><span class="w">
+</span></span></span><span class="line"><span class="ln">27</span><span class="cl"><span class="w">    </span><span class="nt">replacement</span><span class="p">:</span><span class="w"> </span><span class="l">${1}:9219</span><span class="w">
+</span></span></span><span class="line"><span class="ln">28</span><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="ln">29</span><span class="cl"><span class="w"></span>- <span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;kubeconfig-admin&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">30</span><span class="cl"><span class="w">  </span><span class="nt">metrics_path</span><span class="p">:</span><span class="w"> </span><span class="l">/probe</span><span class="w">
+</span></span></span><span class="line"><span class="ln">31</span><span class="cl"><span class="w">  </span><span class="nt">params</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">32</span><span class="cl"><span class="w">    </span><span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;kubeconfig&#34;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">33</span><span class="cl"><span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;/host/etc/kubernetes/admin.conf&#34;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">34</span><span class="cl"><span class="w">  </span><span class="nt">kubernetes_sd_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">35</span><span class="cl"><span class="w">  </span>- <span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l">node</span><span class="w">
+</span></span></span><span class="line"><span class="ln">36</span><span class="cl"><span class="w">  </span><span class="nt">relabel_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">37</span><span class="cl"><span class="w">  </span>- <span class="nt">source_labels</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">__address__]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">38</span><span class="cl"><span class="w">    </span><span class="nt">regex</span><span class="p">:</span><span class="w"> </span><span class="l">^(.*):(.*)$</span><span class="w">
+</span></span></span><span class="line"><span class="ln">39</span><span class="cl"><span class="w">    </span><span class="nt">target_label</span><span class="p">:</span><span class="w"> </span><span class="l">__address__</span><span class="w">
+</span></span></span><span class="line"><span class="ln">40</span><span class="cl"><span class="w">    </span><span class="nt">replacement</span><span class="p">:</span><span class="w"> </span><span class="l">${1}:9219</span><span class="w">
+</span></span></span><span class="line"><span class="ln">41</span><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="ln">42</span><span class="cl"><span class="w"></span>- <span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;kubeconfig-controller-manager&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">43</span><span class="cl"><span class="w">  </span><span class="nt">metrics_path</span><span class="p">:</span><span class="w"> </span><span class="l">/probe</span><span class="w">
+</span></span></span><span class="line"><span class="ln">44</span><span class="cl"><span class="w">  </span><span class="nt">params</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">45</span><span class="cl"><span class="w">    </span><span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;kubeconfig&#34;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">46</span><span class="cl"><span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;/host/etc/kubernetes/controller-manager.conf&#34;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">47</span><span class="cl"><span class="w">  </span><span class="nt">kubernetes_sd_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">48</span><span class="cl"><span class="w">  </span>- <span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l">node</span><span class="w">
+</span></span></span><span class="line"><span class="ln">49</span><span class="cl"><span class="w">  </span><span class="nt">relabel_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">50</span><span class="cl"><span class="w">  </span>- <span class="nt">source_labels</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">__address__]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">51</span><span class="cl"><span class="w">    </span><span class="nt">regex</span><span class="p">:</span><span class="w"> </span><span class="l">^(.*):(.*)$</span><span class="w">
+</span></span></span><span class="line"><span class="ln">52</span><span class="cl"><span class="w">    </span><span class="nt">target_label</span><span class="p">:</span><span class="w"> </span><span class="l">__address__</span><span class="w">
+</span></span></span><span class="line"><span class="ln">53</span><span class="cl"><span class="w">    </span><span class="nt">replacement</span><span class="p">:</span><span class="w"> </span><span class="l">${1}:9219</span><span class="w">
+</span></span></span><span class="line"><span class="ln">54</span><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="ln">55</span><span class="cl"><span class="w"></span>- <span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;kubeconfig-kubelet&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">56</span><span class="cl"><span class="w">  </span><span class="nt">metrics_path</span><span class="p">:</span><span class="w"> </span><span class="l">/probe</span><span class="w">
+</span></span></span><span class="line"><span class="ln">57</span><span class="cl"><span class="w">  </span><span class="nt">params</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">58</span><span class="cl"><span class="w">    </span><span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;kubeconfig&#34;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">59</span><span class="cl"><span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;/host/etc/kubernetes/kubelet.conf&#34;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">60</span><span class="cl"><span class="w">  </span><span class="nt">kubernetes_sd_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">61</span><span class="cl"><span class="w">  </span>- <span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l">node</span><span class="w">
+</span></span></span><span class="line"><span class="ln">62</span><span class="cl"><span class="w">  </span><span class="nt">relabel_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">63</span><span class="cl"><span class="w">  </span>- <span class="nt">source_labels</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">__address__]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">64</span><span class="cl"><span class="w">    </span><span class="nt">regex</span><span class="p">:</span><span class="w"> </span><span class="l">^(.*):(.*)$</span><span class="w">
+</span></span></span><span class="line"><span class="ln">65</span><span class="cl"><span class="w">    </span><span class="nt">target_label</span><span class="p">:</span><span class="w"> </span><span class="l">__address__</span><span class="w">
+</span></span></span><span class="line"><span class="ln">66</span><span class="cl"><span class="w">    </span><span class="nt">replacement</span><span class="p">:</span><span class="w"> </span><span class="l">${1}:9219</span><span class="w">
+</span></span></span><span class="line"><span class="ln">67</span><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="ln">68</span><span class="cl"><span class="w"></span>- <span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;kubeconfig-scheduler&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">69</span><span class="cl"><span class="w">  </span><span class="nt">metrics_path</span><span class="p">:</span><span class="w"> </span><span class="l">/probe</span><span class="w">
+</span></span></span><span class="line"><span class="ln">70</span><span class="cl"><span class="w">  </span><span class="nt">params</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">71</span><span class="cl"><span class="w">    </span><span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;kubeconfig&#34;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">72</span><span class="cl"><span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;/host/etc/kubernetes/scheduler.conf&#34;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">73</span><span class="cl"><span class="w">  </span><span class="nt">kubernetes_sd_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">74</span><span class="cl"><span class="w">  </span>- <span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l">node</span><span class="w">
+</span></span></span><span class="line"><span class="ln">75</span><span class="cl"><span class="w">  </span><span class="nt">relabel_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">76</span><span class="cl"><span class="w">  </span>- <span class="nt">source_labels</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">__address__]</span><span class="w">
+</span></span></span><span class="line"><span class="ln">77</span><span class="cl"><span class="w">    </span><span class="nt">regex</span><span class="p">:</span><span class="w"> </span><span class="l">^(.*):(.*)$</span><span class="w">
+</span></span></span><span class="line"><span class="ln">78</span><span class="cl"><span class="w">    </span><span class="nt">target_label</span><span class="p">:</span><span class="w"> </span><span class="l">__address__</span><span class="w">
+</span></span></span><span class="line"><span class="ln">79</span><span class="cl"><span class="w">    </span><span class="nt">replacement</span><span class="p">:</span><span class="w"> </span><span class="l">${1}:9219</span><span class="w">
+</span></span></span></code></pre></div><h4 id="配置prometheus告警策略">配置Prometheus告警策略</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nt">groups</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="w"></span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">check_ssl_validity</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="w">  </span><span class="nt">rules</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="w">  </span>- <span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;K8S集群证书在7天后过期&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="w">    </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l">(ssl_file_cert_not_after - time()) / 86400 &lt; 7</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="w">    </span><span class="nt">for</span><span class="p">:</span><span class="w"> </span><span class="l">1h</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="w">    </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="w">      </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l">critical</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="w">    </span><span class="nt">annotations</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;K8S集群的证书还有{{ printf &#34;%.1f&#34; $value }}天就过期了,请尽快更新证书&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="w">      </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;K8S集群证书证书过期警告&#34;</span><span class="w">
+</span></span></span></code></pre></div><h4 id="配置grafana面板">配置Grafana面板</h4>
+<p>服务账户证书展示</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="../../images/posts/k8s/image-20230508111309091.png"
+        data-srcset="../../images/posts/k8s/image-20230508111309091.png, ../../images/posts/k8s/image-20230508111309091.png 1.5x, ../../images/posts/k8s/image-20230508111309091.png 2x"
+        data-sizes="auto"
+        alt="../../images/posts/k8s/image-20230508111309091.png"
+        title="image-20230508111309091" /></p>
+<p>ssl证书展示</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="../../images/posts/k8s/image-20230508111341724.png"
+        data-srcset="../../images/posts/k8s/image-20230508111341724.png, ../../images/posts/k8s/image-20230508111341724.png 1.5x, ../../images/posts/k8s/image-20230508111341724.png 2x"
+        data-sizes="auto"
+        alt="../../images/posts/k8s/image-20230508111341724.png"
+        title="image-20230508111341724" /></p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2023-05-09</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kubernetes/">Kubernetes</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/jumpserver%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/" class="prev" rel="prev" title="Jumpserver使用手册"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>Jumpserver使用手册</a></div>
+</div>
+<div id="comments"><div id="valine" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://valine.js.org/">Valine</a>.
+            </noscript></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork">
+				Powered By <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" width="20" height="10" style="fill: #ff6a00" class="sc-CB-bczRLJ CB-fQyPEP"><path d="M21.4 22.4h21.2v-4.8H21.4z"></path><path d="M53.3 0H39.2l3.4 4.8L52.9 8c1.9.6 3.1 2.3 3.1 4.3v15.4c0 2-1.2 3.7-3.1 4.3l-10.3 3.2-3.4 4.8h14.1c6 0 10.7-4.8 10.7-10.7V10.7C64 4.7 59.2 0 53.3 0M10.7 0h14.1l-3.4 4.8L11.1 8A4.5 4.5 0 0 0 8 12.3v15.4c0 2 1.2 3.7 3.1 4.3l10.3 3.2 3.4 4.8H10.7C4.7 40 0 35.2 0 29.3V10.7C0 4.7 4.8 0 10.7 0"></path></svg><a href="https://www.aliyun.com">Aliyun</a><br /><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2019 - 2023</span><span class="icp-splitter">&nbsp;|&nbsp;</span><br class="icp-br"/>
+                    <span class="icp">苏ICP备19065273号</span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/valine/valine.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/valine@1.4.18/dist/Valine.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/algoliasearch@4.13.0/dist/algoliasearch-lite.umd.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@9.1.0/dist/mermaid.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":50},"comment":{"valine":{"appId":"IyRdCooou4lRgtrqYYEIDgRK-gzGzoHsz","appKey":"3hXIq4IuQBcg76WWjetWOrMO","avatar":"mp","el":"#valine","emojiCDN":"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/","emojiMaps":{"100":"1f4af.png","alien":"1f47d.png","anger":"1f4a2.png","angry":"1f620.png","anguished":"1f627.png","astonished":"1f632.png","black_heart":"1f5a4.png","blue_heart":"1f499.png","blush":"1f60a.png","bomb":"1f4a3.png","boom":"1f4a5.png","broken_heart":"1f494.png","brown_heart":"1f90e.png","clown_face":"1f921.png","cold_face":"1f976.png","cold_sweat":"1f630.png","confounded":"1f616.png","confused":"1f615.png","cry":"1f622.png","crying_cat_face":"1f63f.png","cupid":"1f498.png","dash":"1f4a8.png","disappointed":"1f61e.png","disappointed_relieved":"1f625.png","dizzy":"1f4ab.png","dizzy_face":"1f635.png","drooling_face":"1f924.png","exploding_head":"1f92f.png","expressionless":"1f611.png","face_vomiting":"1f92e.png","face_with_cowboy_hat":"1f920.png","face_with_hand_over_mouth":"1f92d.png","face_with_head_bandage":"1f915.png","face_with_monocle":"1f9d0.png","face_with_raised_eyebrow":"1f928.png","face_with_rolling_eyes":"1f644.png","face_with_symbols_on_mouth":"1f92c.png","face_with_thermometer":"1f912.png","fearful":"1f628.png","flushed":"1f633.png","frowning":"1f626.png","ghost":"1f47b.png","gift_heart":"1f49d.png","green_heart":"1f49a.png","grimacing":"1f62c.png","grin":"1f601.png","grinning":"1f600.png","hankey":"1f4a9.png","hear_no_evil":"1f649.png","heart":"2764-fe0f.png","heart_decoration":"1f49f.png","heart_eyes":"1f60d.png","heart_eyes_cat":"1f63b.png","heartbeat":"1f493.png","heartpulse":"1f497.png","heavy_heart_exclamation_mark_ornament":"2763-fe0f.png","hole":"1f573-fe0f.png","hot_face":"1f975.png","hugging_face":"1f917.png","hushed":"1f62f.png","imp":"1f47f.png","innocent":"1f607.png","japanese_goblin":"1f47a.png","japanese_ogre":"1f479.png","joy":"1f602.png","joy_cat":"1f639.png","kiss":"1f48b.png","kissing":"1f617.png","kissing_cat":"1f63d.png","kissing_closed_eyes":"1f61a.png","kissing_heart":"1f618.png","kissing_smiling_eyes":"1f619.png","laughing":"1f606.png","left_speech_bubble":"1f5e8-fe0f.png","love_letter":"1f48c.png","lying_face":"1f925.png","mask":"1f637.png","money_mouth_face":"1f911.png","nauseated_face":"1f922.png","nerd_face":"1f913.png","neutral_face":"1f610.png","no_mouth":"1f636.png","open_mouth":"1f62e.png","orange_heart":"1f9e1.png","partying_face":"1f973.png","pensive":"1f614.png","persevere":"1f623.png","pleading_face":"1f97a.png","pouting_cat":"1f63e.png","purple_heart":"1f49c.png","rage":"1f621.png","relaxed":"263a-fe0f.png","relieved":"1f60c.png","revolving_hearts":"1f49e.png","right_anger_bubble":"1f5ef-fe0f.png","robot_face":"1f916.png","rolling_on_the_floor_laughing":"1f923.png","scream":"1f631.png","scream_cat":"1f640.png","see_no_evil":"1f648.png","shushing_face":"1f92b.png","skull":"1f480.png","skull_and_crossbones":"2620-fe0f.png","sleeping":"1f634.png","sleepy":"1f62a.png","slightly_frowning_face":"1f641.png","slightly_smiling_face":"1f642.png","smile":"1f604.png","smile_cat":"1f638.png","smiley":"1f603.png","smiley_cat":"1f63a.png","smiling_face_with_3_hearts":"1f970.png","smiling_imp":"1f608.png","smirk":"1f60f.png","smirk_cat":"1f63c.png","sneezing_face":"1f927.png","sob":"1f62d.png","space_invader":"1f47e.png","sparkling_heart":"1f496.png","speak_no_evil":"1f64a.png","speech_balloon":"1f4ac.png","star-struck":"1f929.png","stuck_out_tongue":"1f61b.png","stuck_out_tongue_closed_eyes":"1f61d.png","stuck_out_tongue_winking_eye":"1f61c.png","sunglasses":"1f60e.png","sweat":"1f613.png","sweat_drops":"1f4a6.png","sweat_smile":"1f605.png","thinking_face":"1f914.png","thought_balloon":"1f4ad.png","tired_face":"1f62b.png","triumph":"1f624.png","two_hearts":"1f495.png","unamused":"1f612.png","upside_down_face":"1f643.png","weary":"1f629.png","white_frowning_face":"2639-fe0f.png","white_heart":"1f90d.png","wink":"1f609.png","woozy_face":"1f974.png","worried":"1f61f.png","yawning_face":"1f971.png","yellow_heart":"1f49b.png","yum":"1f60b.png","zany_face":"1f92a.png","zipper_mouth_face":"1f910.png","zzz":"1f4a4.png"},"enableQQ":false,"highlight":true,"lang":"zh-CN","pageSize":10,"placeholder":"你的评论 ...","recordIP":true,"serverURLs":"https://iyrdcooo.lc-cn-n1-shared.com","visitor":true}},"data":{"id-1":"\r\n%%{init:{\"theme\":\"netural\"}}%%\r\nsequenceDiagram\r\n    actor user\r\n    participant apiSrv as control plane\u003cbr\u003e\u003cbr\u003ekube-apiserver\r\n    participant etcd as control plane\u003cbr\u003e\u003cbr\u003eetcd\r\n    participant cntrlMgr as control plane\u003cbr\u003e\u003cbr\u003ekube-controller-manager\r\n    participant sched as control plane\u003cbr\u003e\u003cbr\u003ekube-scheduler\r\n    participant kubelet as node\u003cbr\u003e\u003cbr\u003ekubelet\r\n    participant container as node\u003cbr\u003e\u003cbr\u003econtainer\u003cbr\u003eruntime\r\n    user-\u003e\u003eapiSrv: 1. kubectl create -f pod.yaml\r\n    apiSrv--\u003e\u003eetcd: 2. 保存到etcd\r\n    cntrlMgr-\u003e\u003eapiSrv: 3. kube-controller-manager检查更新\r\n    sched--\u003eapiSrv: 4. kube-scheduler观察到需要创建新的pod\r\n    sched-\u003e\u003eapiSrv: 5. kube-scheduler通过算法算出要调度的节点\r\n    apiSrv--\u003e\u003eetcd: 6. 保存pod及节点映射到etcd中\r\n    kubelet-\u003e\u003eapiSrv: 7. 对应节点的kubelet观察到需要在本节点创建新的pod\r\n    apiSrv-\u003e\u003ekubelet: 8. 绑定pod到对应节点的kubelet\r\n    kubelet-\u003e\u003econtainer: 9. 通知容器运行时运行pod\r\n    kubelet-\u003e\u003eapiSrv: 10. 向kube-apiserver更新状态\r\n    apiSrv--\u003e\u003eetcd: 11. 保存最新状态到etcd中\r","id-2":"\r\n%%{init:{\"theme\":\"netural\"}}%%\r\nsequenceDiagram\r\n    actor user\r\n    participant apiSrv as control plane\u003cbr\u003e\u003cbr\u003ekube-apiserver\r\n    participant kubelet as node\u003cbr\u003e\u003cbr\u003ekubelet\r\n    participant container as node\u003cbr\u003e\u003cbr\u003econtainer\u003cbr\u003eruntime\r\n    user-\u003e\u003eapiSrv: 1. kubectl exec -it pod -- /bin/bash\r\n    apiSrv -\u003e\u003e kubelet: 2.连接到kubelet\r\n    kubelet -\u003e\u003e container: 3.连接到容器运行时\r\n    container -\u003e\u003e kubelet: 4.返回执行结果\r\n    kubelet-\u003e\u003eapiSrv: 5.返回执行结果\r\n    apiSrv -\u003e\u003e user: 6.呈现执行结果\r"},"search":{"algoliaAppID":"RALZ9QXE5X","algoliaIndex":"search","algoliaSearchKey":"edb3145c2e9fe9c9c4eb49630c0dc4f6","highlightTag":"em","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":30,"type":"algolia"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

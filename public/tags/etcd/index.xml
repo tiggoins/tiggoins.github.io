@@ -1,0 +1,16 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Etcd - 标签 - 御秋博客</title>
+        <link>https://www.freethinker.top/tags/etcd/</link>
+        <description>Etcd - 标签 - 御秋博客</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>395108141t@gmail.com (ltzhang)</managingEditor>
+            <webMaster>395108141t@gmail.com (ltzhang)</webMaster><lastBuildDate>Sun, 17 Jan 2021 00:00:00 &#43;0000</lastBuildDate><atom:link href="https://www.freethinker.top/tags/etcd/" rel="self" type="application/rss+xml" /><item>
+    <title>Etcd：NO SPACE的问题修复步骤</title>
+    <link>https://www.freethinker.top/posts/etcdno-space%E7%9A%84%E9%97%AE%E9%A2%98%E4%BF%AE%E5%A4%8D%E6%AD%A5%E9%AA%A4/</link>
+    <pubDate>Sun, 17 Jan 2021 00:00:00 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/etcdno-space%E7%9A%84%E9%97%AE%E9%A2%98%E4%BF%AE%E5%A4%8D%E6%AD%A5%E9%AA%A4/</guid>
+    <description><![CDATA[<p><code>kubectl get cs</code>时发现所有的<code>etcd</code>均返回503报错，查看etcd的告警发现有<code>NO SPACE</code>的信息且<code>etcdctl endpoints status</code>中的DB SIZE大于2GiB时。表示etcd的空间超过最大值需进行压缩。不进行压缩api-server无法继续写入数据，影响集群正常工作。</p>]]></description>
+</item>
+</channel>
+</rss>

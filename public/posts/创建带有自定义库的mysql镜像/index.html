@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>创建带有自定义库的Mysql镜像 - 御秋博客</title><meta name="Description" content="Hugo theme - LoveIt"><meta property="og:title" content="创建带有自定义库的Mysql镜像" />
+<meta property="og:description" content="默认情况下，在mysql容器中创建新库时需要先运行mysql容器，把需要的sql文件通过docker cp的方式拷贝至容器内，再通过mysql的子命令将sql文件导入。过程比较繁琐，如果是公司的项目部署，可以创建带有公司的项目sql的自定义mysql镜像，避免繁琐的流程。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://www.freethinker.top/posts/%E5%88%9B%E5%BB%BA%E5%B8%A6%E6%9C%89%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BA%93%E7%9A%84mysql%E9%95%9C%E5%83%8F/" /><meta property="og:image" content="https://www.freethinker.top/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-05-17T10:51:41+00:00" />
+<meta property="article:modified_time" content="2020-05-17T10:51:41+00:00" /><meta property="og:site_name" content="御秋博客" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://www.freethinker.top/logo.png"/>
+
+<meta name="twitter:title" content="创建带有自定义库的Mysql镜像"/>
+<meta name="twitter:description" content="默认情况下，在mysql容器中创建新库时需要先运行mysql容器，把需要的sql文件通过docker cp的方式拷贝至容器内，再通过mysql的子命令将sql文件导入。过程比较繁琐，如果是公司的项目部署，可以创建带有公司的项目sql的自定义mysql镜像，避免繁琐的流程。"/>
+<meta name="application-name" content="御秋博客">
+<meta name="apple-mobile-web-app-title" content="御秋博客"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://www.freethinker.top/posts/%E5%88%9B%E5%BB%BA%E5%B8%A6%E6%9C%89%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BA%93%E7%9A%84mysql%E9%95%9C%E5%83%8F/" /><link rel="prev" href="https://www.freethinker.top/posts/docker%E4%B8%89%E5%89%91%E5%AE%A2%E4%B9%8Bdocker-machine/" /><link rel="next" href="https://www.freethinker.top/posts/nginx%E6%B7%BB%E5%8A%A0lua%E5%AE%9E%E7%8E%B0waf%E9%98%B2%E7%81%AB%E5%A2%99/" /><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "创建带有自定义库的Mysql镜像",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/www.freethinker.top\/posts\/%E5%88%9B%E5%BB%BA%E5%B8%A6%E6%9C%89%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BA%93%E7%9A%84mysql%E9%95%9C%E5%83%8F\/"
+        },"image": ["https:\/\/www.freethinker.top\/images\/Apple-Devices-Preview.png"],"genre": "posts","keywords": "Docker","wordcount":  600 ,
+        "url": "https:\/\/www.freethinker.top\/posts\/%E5%88%9B%E5%BB%BA%E5%B8%A6%E6%9C%89%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BA%93%E7%9A%84mysql%E9%95%9C%E5%83%8F\/","datePublished": "2020-05-17T10:51:41+00:00","dateModified": "2020-05-17T10:51:41+00:00","publisher": {
+            "@type": "Organization",
+            "name": "xxxx","logo": "https:\/\/www.freethinker.top\/images\/avatar.png"},"author": {
+                "@type": "Person",
+                "name": "ltzhang"
+            },"description": ""
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="御秋博客">御秋博客</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="御秋博客">御秋博客</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><div class="search-dropdown desktop">
+        <div id="search-dropdown-desktop"></div>
+    </div>
+    <div class="search-dropdown mobile">
+        <div id="search-dropdown-mobile"></div>
+    </div><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">创建带有自定义库的Mysql镜像</h1><div class="post-meta">
+            <div class="post-meta-line">&nbsp;<span class="post-category">收录于 <a href="/categories/docker/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Docker</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2020-05-17">2020-05-17</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;约 600 字&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;预计阅读 3 分钟&nbsp;<span id="/posts/%E5%88%9B%E5%BB%BA%E5%B8%A6%E6%9C%89%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BA%93%E7%9A%84mysql%E9%95%9C%E5%83%8F/" class="leancloud_visitors" data-flag-title="创建带有自定义库的Mysql镜像">
+                        <i class="far fa-eye fa-fw" aria-hidden="true"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;次阅读
+                    </span>&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#背景分析">背景分析</a></li>
+        <li><a href="#实现过程">实现过程</a></li>
+        <li><a href="#总结">总结</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>默认情况下，在mysql容器中创建新库时需要先运行mysql容器，把需要的sql文件通过docker cp的方式拷贝至容器内，再通过mysql的子命令将sql文件导入。过程比较繁琐，如果是公司的项目部署，可以创建带有公司的项目sql的自定义mysql镜像，避免繁琐的流程。</p>
+<h3 id="背景分析">背景分析</h3>
+<p>首先拉取官方镜像：</p>
+<p><code>docker pull mysql:5.7.30</code></p>
+<p>查看镜像的构建历史</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">[root@bochs docker]# docker history mysql:5.7.30 
+</span></span><span class="line"><span class="ln">2</span><span class="cl">IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+</span></span><span class="line"><span class="ln">3</span><span class="cl">...               
+</span></span><span class="line"><span class="ln">4</span><span class="cl">&lt;missing&gt;           29 hours ago        /bin/sh -c #(nop)  ENTRYPOINT [&#34;docker-entrypoint.sh&#34;]   0B                              
+</span></span><span class="line"><span class="ln">5</span><span class="cl">...    
+</span></span></code></pre></div><p>可以发现，默认的entrypoint为<code>docker-entrypoint.sh</code></p>
+<p>进入容器内，可以发现<code>docker-entrypoint.sh</code>其实是个软连接</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">lrwxrwxrwx   1 root root   34 May 15 20:11 entrypoint.sh -&gt; usr/local/bin/docker-entrypoint.sh
+</span></span></code></pre></div><p>查看此脚本，发现脚本中已经定义了初始化的代码：</p>
+<p>1、<code>docker_process_init_file()</code>函数定义了初始文件的格式，其中调用了<code>docker_process_sql</code>来完成新库创建及数据导入。</p>
+<p>初始化文件可以是.sh  .sql  .sql.gz .sql.xz格式中的任一种</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">  docker_process_init_files() {
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">          # mysql here for backwards compatibility &#34;${mysql[@]}&#34;
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">          mysql=( docker_process_sql )
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">          echo
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">          local f
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">          for f; do
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">                  case &#34;$f&#34; in
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">                          *.sh)
+</span></span><span class="line"><span class="ln">10</span><span class="cl">                                  # https://github.com/docker-library/postgres/issues/450#issuecomment-393167936
+</span></span><span class="line"><span class="ln">11</span><span class="cl">                                  # https://github.com/docker-library/postgres/pull/452
+</span></span><span class="line"><span class="ln">12</span><span class="cl">                                  if [ -x &#34;$f&#34; ]; then
+</span></span><span class="line"><span class="ln">13</span><span class="cl">                                          mysql_note &#34;$0: running $f&#34;
+</span></span><span class="line"><span class="ln">14</span><span class="cl">                                          &#34;$f&#34;
+</span></span><span class="line"><span class="ln">15</span><span class="cl">                                  else
+</span></span><span class="line"><span class="ln">16</span><span class="cl">                                          mysql_note &#34;$0: sourcing $f&#34;
+</span></span><span class="line"><span class="ln">17</span><span class="cl">                                          . &#34;$f&#34;
+</span></span><span class="line"><span class="ln">18</span><span class="cl">                                  fi
+</span></span><span class="line"><span class="ln">19</span><span class="cl">                                  ;;
+</span></span><span class="line"><span class="ln">20</span><span class="cl">                          *.sql)    mysql_note &#34;$0: running $f&#34;; docker_process_sql &lt; &#34;$f&#34;; echo ;;
+</span></span><span class="line"><span class="ln">21</span><span class="cl">                          *.sql.gz) mysql_note &#34;$0: running $f&#34;; gunzip -c &#34;$f&#34; | docker_process_sql; echo ;;
+</span></span><span class="line"><span class="ln">22</span><span class="cl">                          *.sql.xz) mysql_note &#34;$0: running $f&#34;; xzcat &#34;$f&#34; | docker_process_sql; echo ;;
+</span></span><span class="line"><span class="ln">23</span><span class="cl">                          *)        mysql_warn &#34;$0: ignoring $f&#34; ;;
+</span></span><span class="line"><span class="ln">24</span><span class="cl">                  esac
+</span></span><span class="line"><span class="ln">25</span><span class="cl">                  echo
+</span></span><span class="line"><span class="ln">26</span><span class="cl">          done
+</span></span><span class="line"><span class="ln">27</span><span class="cl">}
+</span></span></code></pre></div><p>2、<code>docker_process_sql</code>使用mysql命令导入数据库文件</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">docker_process_sql() {
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">         passfileArgs=()
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">         if [ &#39;--dont-use-mysql-root-password&#39; = &#34;$1&#34; ]; then
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">                 passfileArgs+=( &#34;$1&#34; )
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">                 shift
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">         fi
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">        
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">         if [ -n &#34;$MYSQL_DATABASE&#34; ]; then
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">                 set -- --database=&#34;$MYSQL_DATABASE&#34; &#34;$@&#34;
+</span></span><span class="line"><span class="ln">10</span><span class="cl">         fi
+</span></span><span class="line"><span class="ln">11</span><span class="cl"> 
+</span></span><span class="line"><span class="ln">12</span><span class="cl">         mysql --defaults-extra-file=&lt;( _mysql_passfile &#34;${passfileArgs[@]}&#34;) --protocol=socket -uroot -hlocalhost --socket=&#34;${SOCKET}&#34; &#34;$@&#34;
+</span></span><span class="line"><span class="ln">13</span><span class="cl">}
+</span></span></code></pre></div><p>3、在主函数调用了docker_process_init_file()函数,初始化的文件全部位于<code>/docker-entrypoint-initdb.d/</code>中</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">365         docker_process_init_files /docker-entrypoint-initdb.d/*
+</span></span></code></pre></div><p>只要把sql文件放入该目录我们就可以通过docker build命令来创建带有自定义库的mysql镜像了。</p>
+<h3 id="实现过程">实现过程</h3>
+<p>创建新的Dockerfile文件，将所需要的用到的sql文件拷贝到/docker-entrypoint-initdb.d/目录中</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl"> FROM mysql:5.7.30
+</span></span><span class="line"><span class="ln">2</span><span class="cl"> COPY ./mysql/initsql/*.sql /docker-entrypoint-initdb.d/
+</span></span></code></pre></div><p>docker-compose文件如下</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">version: &#34;3.3&#34;
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">   
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">services:
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  mysql:
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    build:
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">      context: .
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">      dockerfile: Dockerfile
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    image: mysql_modified:v1.0
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    container_name: mysql_modified
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    ports:
+</span></span><span class="line"><span class="ln">11</span><span class="cl">     - target: 3306
+</span></span><span class="line"><span class="ln">12</span><span class="cl">       published: 3306
+</span></span><span class="line"><span class="ln">13</span><span class="cl">       protocol: tcp
+</span></span><span class="line"><span class="ln">14</span><span class="cl">       mode: host
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    volumes:
+</span></span><span class="line"><span class="ln">16</span><span class="cl">       - /home/docker/mysql/conf/:/etc/mysql/conf.d/
+</span></span><span class="line"><span class="ln">17</span><span class="cl">       - /home/docker/mysql/data/:/var/lib/mysql/
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    environment:
+</span></span><span class="line"><span class="ln">19</span><span class="cl">       - MYSQL_ROOT_PASSWORD=Zxczxc@123
+</span></span></code></pre></div><blockquote>
+<p>如果是用mysqldump导出的sql文件，必须要加上-B参数保留创库语句。</p>
+</blockquote>
+<p>新建测试用的test.sql文件</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">DB_TEST</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="w"></span><span class="k">USE</span><span class="w"> </span><span class="n">DB_TEST</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="w"> 
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="nf">employees</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="w">    </span><span class="n">emp_no</span><span class="w">       </span><span class="kt">INT</span><span class="w">             </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="w"> </span><span class="n">COMMENT</span><span class="w"> </span><span class="s1">&#39;主键&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="w">    </span><span class="n">birth_date</span><span class="w">    </span><span class="kt">DATE</span><span class="w">           </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="w"> </span><span class="n">COMMENT</span><span class="w"> </span><span class="s1">&#39;生日&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="w">    </span><span class="n">first_name</span><span class="w">   </span><span class="kt">VARCHAR</span><span class="p">(</span><span class="mi">14</span><span class="p">)</span><span class="w">     </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="w"> </span><span class="n">COMMENT</span><span class="w"> </span><span class="s1">&#39;用户-姓&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="w">    </span><span class="n">last_name</span><span class="w">    </span><span class="kt">VARCHAR</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="w">     </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="w"> </span><span class="n">COMMENT</span><span class="w"> </span><span class="s1">&#39;用户-名&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="w">    </span><span class="n">gender</span><span class="w">        </span><span class="kt">ENUM</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">,</span><span class="s1">&#39;F&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="w"> </span><span class="n">COMMENT</span><span class="w"> </span><span class="s1">&#39;性别&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="w">    </span><span class="n">hire_date</span><span class="w">     </span><span class="kt">DATE</span><span class="w">           </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="w"> </span><span class="n">COMMENT</span><span class="w"> </span><span class="s1">&#39;入职时间&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">emp_no</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="o">`</span><span class="n">employees</span><span class="o">`</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> 
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="w"></span><span class="p">(</span><span class="mi">10001</span><span class="p">,</span><span class="s1">&#39;1953-09-02&#39;</span><span class="p">,</span><span class="s1">&#39;Georgi&#39;</span><span class="p">,</span><span class="s1">&#39;Facello&#39;</span><span class="p">,</span><span class="s1">&#39;M&#39;</span><span class="p">,</span><span class="s1">&#39;1986-06-26&#39;</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="w"></span><span class="p">(</span><span class="mi">10002</span><span class="p">,</span><span class="s1">&#39;1964-06-02&#39;</span><span class="p">,</span><span class="s1">&#39;Bezalel&#39;</span><span class="p">,</span><span class="s1">&#39;Simmel&#39;</span><span class="p">,</span><span class="s1">&#39;F&#39;</span><span class="p">,</span><span class="s1">&#39;1985-11-21&#39;</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="w"></span><span class="p">(</span><span class="mi">10003</span><span class="p">,</span><span class="s1">&#39;1959-12-03&#39;</span><span class="p">,</span><span class="s1">&#39;Parto&#39;</span><span class="p">,</span><span class="s1">&#39;Bamford&#39;</span><span class="p">,</span><span class="s1">&#39;M&#39;</span><span class="p">,</span><span class="s1">&#39;1986-08-28&#39;</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="w"></span><span class="p">(</span><span class="mi">10004</span><span class="p">,</span><span class="s1">&#39;1954-05-01&#39;</span><span class="p">,</span><span class="s1">&#39;Chirstian&#39;</span><span class="p">,</span><span class="s1">&#39;Koblick&#39;</span><span class="p">,</span><span class="s1">&#39;M&#39;</span><span class="p">,</span><span class="s1">&#39;1986-12-01&#39;</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>整个构建目录结构如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">[root@bochs /]# tree home
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">home
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">`-- docker
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    |-- docker-compose.yml
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    |-- Dockerfile
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    `-- mysql
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">        |-- conf
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">        |   `-- my.cnf
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">        |-- data
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        `-- initsql
+</span></span><span class="line"><span class="ln">11</span><span class="cl">            `-- test.sql
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl">5 directories, 4 files
+</span></span></code></pre></div><p>使用<code>docker-compose build</code>命令构建新的带有默认库mysql镜像</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">[root@bochs docker]# docker-compose build
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">Building mysql
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Step 1/2 : FROM mysql:5.7.30
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"> ---&gt; b84d68d0a7db
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Step 2/2 : COPY ./mysql/initsql/*.sql /docker-entrypoint-initdb.d/
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"> ---&gt; c64103df17a2
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">Successfully built c64103df17a2
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Successfully tagged mysql_modified:v1.0
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl">[root@bochs docker]# docker image ls
+</span></span><span class="line"><span class="ln">12</span><span class="cl">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+</span></span><span class="line"><span class="ln">13</span><span class="cl">mysql_modified      v1.0                c64103df17a2        32 seconds ago      448MB
+</span></span><span class="line"><span class="ln">14</span><span class="cl">mysql               5.7.30              b84d68d0a7db        30 hours ago        448MB
+</span></span></code></pre></div><p>完成镜像创建后使用<code>docker-compose up -d</code>启动该容器并查看数据，新库已成功创建，数据也正常。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">[root@bochs docker]# docker-compose up -d
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">[root@bochs docker]# docker exec -it  mysql_modified mysql -uroot -p&#39;Zxczxc@123&#39; -e &#39;show databases;&#39;
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">mysql: [Warning] Using a password on the command line interface can be insecure.
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">+--------------------+
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">| Database           |
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">+--------------------+
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">| information_schema |
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">| DB_TEST            |
+</span></span><span class="line"><span class="ln">10</span><span class="cl">| mysql              |
+</span></span><span class="line"><span class="ln">11</span><span class="cl">| performance_schema |
+</span></span><span class="line"><span class="ln">12</span><span class="cl">| sys                |
+</span></span><span class="line"><span class="ln">13</span><span class="cl">+--------------------+
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl">[root@bochs docker]# docker exec -it  mysql_modified mysql -uroot -p&#39;Zxczxc@123&#39; -e &#39;select * from DB_TEST.employees;\G&#39;
+</span></span><span class="line"><span class="ln">16</span><span class="cl">mysql: [Warning] Using a password on the command line interface can be insecure.
+</span></span><span class="line"><span class="ln">17</span><span class="cl">+--------+------------+------------+-----------+--------+------------+
+</span></span><span class="line"><span class="ln">18</span><span class="cl">| emp_no | birth_date | first_name | last_name | gender | hire_date  |
+</span></span><span class="line"><span class="ln">19</span><span class="cl">+--------+------------+------------+-----------+--------+------------+
+</span></span><span class="line"><span class="ln">20</span><span class="cl">|  10001 | 1953-09-02 | Georgi     | Facello   | M      | 1986-06-26 |
+</span></span><span class="line"><span class="ln">21</span><span class="cl">|  10002 | 1964-06-02 | Bezalel    | Simmel    | F      | 1985-11-21 |
+</span></span><span class="line"><span class="ln">22</span><span class="cl">|  10003 | 1959-12-03 | Parto      | Bamford   | M      | 1986-08-28 |
+</span></span><span class="line"><span class="ln">23</span><span class="cl">|  10004 | 1954-05-01 | Chirstian  | Koblick   | M      | 1986-12-01 |
+</span></span><span class="line"><span class="ln">24</span><span class="cl">+--------+------------+------------+-----------+--------+------------+
+</span></span></code></pre></div><h3 id="总结">总结</h3>
+<p>放入<code>/docker-entrypoint-initdb.d/</code>目录中的文件只会在构建镜像时执行一次</p>
+<p>可以将多个数据库放入<code>/docker-entrypoint-initdb.d/</code>中达到批量化创建的目的</p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-05-17</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/docker/">Docker</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/docker%E4%B8%89%E5%89%91%E5%AE%A2%E4%B9%8Bdocker-machine/" class="prev" rel="prev" title="Docker三剑客之Docker-Machine"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>Docker三剑客之Docker-Machine</a>
+            <a href="/posts/nginx%E6%B7%BB%E5%8A%A0lua%E5%AE%9E%E7%8E%B0waf%E9%98%B2%E7%81%AB%E5%A2%99/" class="next" rel="next" title="Nginx添加Lua实现WAF防火墙">Nginx添加Lua实现WAF防火墙<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
+</div>
+<div id="comments"><div id="valine" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://valine.js.org/">Valine</a>.
+            </noscript></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork">
+				Powered By <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" width="20" height="10" style="fill: #ff6a00" class="sc-CB-bczRLJ CB-fQyPEP"><path d="M21.4 22.4h21.2v-4.8H21.4z"></path><path d="M53.3 0H39.2l3.4 4.8L52.9 8c1.9.6 3.1 2.3 3.1 4.3v15.4c0 2-1.2 3.7-3.1 4.3l-10.3 3.2-3.4 4.8h14.1c6 0 10.7-4.8 10.7-10.7V10.7C64 4.7 59.2 0 53.3 0M10.7 0h14.1l-3.4 4.8L11.1 8A4.5 4.5 0 0 0 8 12.3v15.4c0 2 1.2 3.7 3.1 4.3l10.3 3.2 3.4 4.8H10.7C4.7 40 0 35.2 0 29.3V10.7C0 4.7 4.8 0 10.7 0"></path></svg><a href="https://www.aliyun.com">Aliyun</a><br /><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2019 - 2023</span><span class="icp-splitter">&nbsp;|&nbsp;</span><br class="icp-br"/>
+                    <span class="icp">苏ICP备19065273号</span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/valine/valine.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/valine@1.4.18/dist/Valine.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/algoliasearch@4.13.0/dist/algoliasearch-lite.umd.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":50},"comment":{"valine":{"appId":"IyRdCooou4lRgtrqYYEIDgRK-gzGzoHsz","appKey":"3hXIq4IuQBcg76WWjetWOrMO","avatar":"mp","el":"#valine","emojiCDN":"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/","emojiMaps":{"100":"1f4af.png","alien":"1f47d.png","anger":"1f4a2.png","angry":"1f620.png","anguished":"1f627.png","astonished":"1f632.png","black_heart":"1f5a4.png","blue_heart":"1f499.png","blush":"1f60a.png","bomb":"1f4a3.png","boom":"1f4a5.png","broken_heart":"1f494.png","brown_heart":"1f90e.png","clown_face":"1f921.png","cold_face":"1f976.png","cold_sweat":"1f630.png","confounded":"1f616.png","confused":"1f615.png","cry":"1f622.png","crying_cat_face":"1f63f.png","cupid":"1f498.png","dash":"1f4a8.png","disappointed":"1f61e.png","disappointed_relieved":"1f625.png","dizzy":"1f4ab.png","dizzy_face":"1f635.png","drooling_face":"1f924.png","exploding_head":"1f92f.png","expressionless":"1f611.png","face_vomiting":"1f92e.png","face_with_cowboy_hat":"1f920.png","face_with_hand_over_mouth":"1f92d.png","face_with_head_bandage":"1f915.png","face_with_monocle":"1f9d0.png","face_with_raised_eyebrow":"1f928.png","face_with_rolling_eyes":"1f644.png","face_with_symbols_on_mouth":"1f92c.png","face_with_thermometer":"1f912.png","fearful":"1f628.png","flushed":"1f633.png","frowning":"1f626.png","ghost":"1f47b.png","gift_heart":"1f49d.png","green_heart":"1f49a.png","grimacing":"1f62c.png","grin":"1f601.png","grinning":"1f600.png","hankey":"1f4a9.png","hear_no_evil":"1f649.png","heart":"2764-fe0f.png","heart_decoration":"1f49f.png","heart_eyes":"1f60d.png","heart_eyes_cat":"1f63b.png","heartbeat":"1f493.png","heartpulse":"1f497.png","heavy_heart_exclamation_mark_ornament":"2763-fe0f.png","hole":"1f573-fe0f.png","hot_face":"1f975.png","hugging_face":"1f917.png","hushed":"1f62f.png","imp":"1f47f.png","innocent":"1f607.png","japanese_goblin":"1f47a.png","japanese_ogre":"1f479.png","joy":"1f602.png","joy_cat":"1f639.png","kiss":"1f48b.png","kissing":"1f617.png","kissing_cat":"1f63d.png","kissing_closed_eyes":"1f61a.png","kissing_heart":"1f618.png","kissing_smiling_eyes":"1f619.png","laughing":"1f606.png","left_speech_bubble":"1f5e8-fe0f.png","love_letter":"1f48c.png","lying_face":"1f925.png","mask":"1f637.png","money_mouth_face":"1f911.png","nauseated_face":"1f922.png","nerd_face":"1f913.png","neutral_face":"1f610.png","no_mouth":"1f636.png","open_mouth":"1f62e.png","orange_heart":"1f9e1.png","partying_face":"1f973.png","pensive":"1f614.png","persevere":"1f623.png","pleading_face":"1f97a.png","pouting_cat":"1f63e.png","purple_heart":"1f49c.png","rage":"1f621.png","relaxed":"263a-fe0f.png","relieved":"1f60c.png","revolving_hearts":"1f49e.png","right_anger_bubble":"1f5ef-fe0f.png","robot_face":"1f916.png","rolling_on_the_floor_laughing":"1f923.png","scream":"1f631.png","scream_cat":"1f640.png","see_no_evil":"1f648.png","shushing_face":"1f92b.png","skull":"1f480.png","skull_and_crossbones":"2620-fe0f.png","sleeping":"1f634.png","sleepy":"1f62a.png","slightly_frowning_face":"1f641.png","slightly_smiling_face":"1f642.png","smile":"1f604.png","smile_cat":"1f638.png","smiley":"1f603.png","smiley_cat":"1f63a.png","smiling_face_with_3_hearts":"1f970.png","smiling_imp":"1f608.png","smirk":"1f60f.png","smirk_cat":"1f63c.png","sneezing_face":"1f927.png","sob":"1f62d.png","space_invader":"1f47e.png","sparkling_heart":"1f496.png","speak_no_evil":"1f64a.png","speech_balloon":"1f4ac.png","star-struck":"1f929.png","stuck_out_tongue":"1f61b.png","stuck_out_tongue_closed_eyes":"1f61d.png","stuck_out_tongue_winking_eye":"1f61c.png","sunglasses":"1f60e.png","sweat":"1f613.png","sweat_drops":"1f4a6.png","sweat_smile":"1f605.png","thinking_face":"1f914.png","thought_balloon":"1f4ad.png","tired_face":"1f62b.png","triumph":"1f624.png","two_hearts":"1f495.png","unamused":"1f612.png","upside_down_face":"1f643.png","weary":"1f629.png","white_frowning_face":"2639-fe0f.png","white_heart":"1f90d.png","wink":"1f609.png","woozy_face":"1f974.png","worried":"1f61f.png","yawning_face":"1f971.png","yellow_heart":"1f49b.png","yum":"1f60b.png","zany_face":"1f92a.png","zipper_mouth_face":"1f910.png","zzz":"1f4a4.png"},"enableQQ":false,"highlight":true,"lang":"zh-CN","pageSize":10,"placeholder":"你的评论 ...","recordIP":true,"serverURLs":"https://iyrdcooo.lc-cn-n1-shared.com","visitor":true}},"search":{"algoliaAppID":"RALZ9QXE5X","algoliaIndex":"search","algoliaSearchKey":"edb3145c2e9fe9c9c4eb49630c0dc4f6","highlightTag":"em","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":30,"type":"algolia"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

@@ -1,0 +1,40 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Nginx - 分类 - 御秋博客</title>
+        <link>https://www.freethinker.top/categories/nginx/</link>
+        <description>Nginx - 分类 - 御秋博客</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>395108141t@gmail.com (ltzhang)</managingEditor>
+            <webMaster>395108141t@gmail.com (ltzhang)</webMaster><lastBuildDate>Sun, 27 Sep 2020 00:18:44 &#43;0000</lastBuildDate><atom:link href="https://www.freethinker.top/categories/nginx/" rel="self" type="application/rss+xml" /><item>
+    <title>Nginx的location匹配优先级</title>
+    <link>https://www.freethinker.top/posts/nginx%E7%9A%84location%E5%8C%B9%E9%85%8D%E4%BC%98%E5%85%88%E7%BA%A7/</link>
+    <pubDate>Sun, 27 Sep 2020 00:18:44 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/nginx%E7%9A%84location%E5%8C%B9%E9%85%8D%E4%BC%98%E5%85%88%E7%BA%A7/</guid>
+    <description><![CDATA[<p>一直以来觉得自己掌握了nginx，直到昨天面试发现自己说的location匹配优先级都不正确。主要原因也是之前没有做过多location的配置，没有去想过这个点，造成面试不理想。故写此博客理解location匹配的优先级。</p>]]></description>
+</item>
+<item>
+    <title>Nginx平滑升级</title>
+    <link>https://www.freethinker.top/posts/nginx%E5%B9%B3%E6%BB%91%E5%8D%87%E7%BA%A7/</link>
+    <pubDate>Sat, 19 Sep 2020 17:53:44 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/nginx%E5%B9%B3%E6%BB%91%E5%8D%87%E7%BA%A7/</guid>
+    <description><![CDATA[<p>本篇博客介绍Nginx的平滑升级，重点是理解Nginx的信号。</p>]]></description>
+</item>
+<item>
+    <title>Nginx添加Lua实现WAF防火墙</title>
+    <link>https://www.freethinker.top/posts/nginx%E6%B7%BB%E5%8A%A0lua%E5%AE%9E%E7%8E%B0waf%E9%98%B2%E7%81%AB%E5%A2%99/</link>
+    <pubDate>Sat, 20 Jun 2020 00:29:00 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/nginx%E6%B7%BB%E5%8A%A0lua%E5%AE%9E%E7%8E%B0waf%E9%98%B2%E7%81%AB%E5%A2%99/</guid>
+    <description><![CDATA[<p>Web应用防护系统（也称：网站应用级入侵防御系统 。英文：Web Application Firewall，简称： WAF）。利用国际上公认的一种说法：Web应用 防火墙是通过执行一系列针对HTTP/HTTPS的 安全策略来专门为Web应用提供保护的一款产品。</p>]]></description>
+</item>
+<item>
+    <title>Nginx-Limit模块</title>
+    <link>https://www.freethinker.top/posts/nginx-limit%E6%A8%A1%E5%9D%97/</link>
+    <pubDate>Tue, 05 May 2020 08:27:44 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/nginx-limit%E6%A8%A1%E5%9D%97/</guid>
+    <description><![CDATA[<p>Nginx的 <strong>limit</strong> 模块主要包括:<code>ngx_http_limit_req_module</code>、<code>ngx_http_limit_conn_module</code>、<code>ngx_stream_limit_conn_module</code></p>]]></description>
+</item>
+</channel>
+</rss>

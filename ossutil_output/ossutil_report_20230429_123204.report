@@ -1,0 +1,1 @@
+# ossutil cp -r /root/kkk8s/public oss://siteofhexo/ -f

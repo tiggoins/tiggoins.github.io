@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Nginx添加Lua实现WAF防火墙 - 御秋博客</title><meta name="Description" content="Hugo theme - LoveIt"><meta property="og:title" content="Nginx添加Lua实现WAF防火墙" />
+<meta property="og:description" content="Web应用防护系统（也称：网站应用级入侵防御系统 。英文：Web Application Firewall，简称： WAF）。利用国际上公认的一种说法：Web应用 防火墙是通过执行一系列针对HTTP/HTTPS的 安全策略来专门为Web应用提供保护的一款产品。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://www.freethinker.top/posts/nginx%E6%B7%BB%E5%8A%A0lua%E5%AE%9E%E7%8E%B0waf%E9%98%B2%E7%81%AB%E5%A2%99/" /><meta property="og:image" content="https://www.freethinker.top/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-06-20T00:29:00+00:00" />
+<meta property="article:modified_time" content="2020-06-20T00:29:00+00:00" /><meta property="og:site_name" content="御秋博客" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://www.freethinker.top/logo.png"/>
+
+<meta name="twitter:title" content="Nginx添加Lua实现WAF防火墙"/>
+<meta name="twitter:description" content="Web应用防护系统（也称：网站应用级入侵防御系统 。英文：Web Application Firewall，简称： WAF）。利用国际上公认的一种说法：Web应用 防火墙是通过执行一系列针对HTTP/HTTPS的 安全策略来专门为Web应用提供保护的一款产品。"/>
+<meta name="application-name" content="御秋博客">
+<meta name="apple-mobile-web-app-title" content="御秋博客"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://www.freethinker.top/posts/nginx%E6%B7%BB%E5%8A%A0lua%E5%AE%9E%E7%8E%B0waf%E9%98%B2%E7%81%AB%E5%A2%99/" /><link rel="prev" href="https://www.freethinker.top/posts/%E5%88%9B%E5%BB%BA%E5%B8%A6%E6%9C%89%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BA%93%E7%9A%84mysql%E9%95%9C%E5%83%8F/" /><link rel="next" href="https://www.freethinker.top/posts/openssh%E5%8D%87%E7%BA%A7/" /><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Nginx添加Lua实现WAF防火墙",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/www.freethinker.top\/posts\/nginx%E6%B7%BB%E5%8A%A0lua%E5%AE%9E%E7%8E%B0waf%E9%98%B2%E7%81%AB%E5%A2%99\/"
+        },"image": ["https:\/\/www.freethinker.top\/images\/Apple-Devices-Preview.png"],"genre": "posts","keywords": "Nginx","wordcount":  280 ,
+        "url": "https:\/\/www.freethinker.top\/posts\/nginx%E6%B7%BB%E5%8A%A0lua%E5%AE%9E%E7%8E%B0waf%E9%98%B2%E7%81%AB%E5%A2%99\/","datePublished": "2020-06-20T00:29:00+00:00","dateModified": "2020-06-20T00:29:00+00:00","publisher": {
+            "@type": "Organization",
+            "name": "xxxx","logo": "https:\/\/www.freethinker.top\/images\/avatar.png"},"author": {
+                "@type": "Person",
+                "name": "ltzhang"
+            },"description": ""
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="御秋博客">御秋博客</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="御秋博客">御秋博客</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><div class="search-dropdown desktop">
+        <div id="search-dropdown-desktop"></div>
+    </div>
+    <div class="search-dropdown mobile">
+        <div id="search-dropdown-mobile"></div>
+    </div><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nginx添加Lua实现WAF防火墙</h1><div class="post-meta">
+            <div class="post-meta-line">&nbsp;<span class="post-category">收录于 <a href="/categories/nginx/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Nginx</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2020-06-20">2020-06-20</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;约 280 字&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;预计阅读 2 分钟&nbsp;<span id="/posts/nginx%E6%B7%BB%E5%8A%A0lua%E5%AE%9E%E7%8E%B0waf%E9%98%B2%E7%81%AB%E5%A2%99/" class="leancloud_visitors" data-flag-title="Nginx添加Lua实现WAF防火墙">
+                        <i class="far fa-eye fa-fw" aria-hidden="true"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;次阅读
+                    </span>&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#nginxlua安装方法">nginx+lua安装方法</a></li>
+        <li><a href="#方法一安装nginx并整合lua模块">方法一：安装nginx并整合lua模块</a>
+          <ul>
+            <li><a href="#安装luajit">安装LuaJIT</a></li>
+            <li><a href="#安装ngx_devel_kitndk">安装ngx_devel_kit(NDK)</a></li>
+            <li><a href="#安装最新版的lua-nginx-module">安装最新版的lua-nginx-module</a></li>
+            <li><a href="#编译nginx并加入lua模块">编译Nginx并加入lua模块</a></li>
+          </ul>
+        </li>
+        <li><a href="#方法二-直接安装openresty">方法二 ：直接安装OpenResty</a></li>
+        <li><a href="#waf模块安装">WAF模块安装</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>Web应用防护系统（也称：网站应用级入侵防御系统 。英文：Web Application Firewall，简称： WAF）。利用国际上公认的一种说法：Web应用 防火墙是通过执行一系列针对HTTP/HTTPS的 安全策略来专门为Web应用提供保护的一款产品。</p>
+<h3 id="nginxlua安装方法">nginx+lua安装方法</h3>
+<h3 id="方法一安装nginx并整合lua模块">方法一：安装nginx并整合lua模块</h3>
+<h4 id="安装luajit">安装LuaJIT</h4>
+<p>LuaJIT的意思是Lua Just-In-Time，是即时的Lua代码解释器。必须去github下载否则运行是会出现报错，项目地址：https://github.com/openresty/luajit2</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">git clone https://github.com/openresty/luajit2.git
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nb">cd</span> luajit2
+</span></span><span class="line"><span class="ln">3</span><span class="cl">make <span class="nv">PREFIX</span><span class="o">=</span>/usr/local/luajit
+</span></span><span class="line"><span class="ln">4</span><span class="cl">make install <span class="nv">PREFIX</span><span class="o">=</span>/usr/local/luajit
+</span></span></code></pre></div><p>安装完成后将如下环境变量加入到<code>/etc/profile</code>中,并执行<code>source /etc/profile</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl"><span class="nb">export</span> <span class="nv">LUAJIT_LIB</span><span class="o">=</span>/usr/local/luajit/lib
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nb">export</span> <span class="nv">LUAJIT_INC</span><span class="o">=</span>/usr/local/luajit/include/luajit-2.1
+</span></span></code></pre></div><h4 id="安装ngx_devel_kitndk">安装ngx_devel_kit(NDK)</h4>
+<p>版本地址:https://github.com/vision5/ngx_devel_kit/tags</p>
+<p>下载并解压</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl"><span class="nb">cd</span> /mnt
+</span></span><span class="line"><span class="ln">2</span><span class="cl">wget https://github.com/vision5/ngx_devel_kit/archive/v0.3.1.tar.gz
+</span></span><span class="line"><span class="ln">3</span><span class="cl">tar -xzvf v0.3.1.tar.gz
+</span></span></code></pre></div><h4 id="安装最新版的lua-nginx-module">安装最新版的lua-nginx-module</h4>
+<p>版本地址：https://github.com/openresty/lua-nginx-module/tags</p>
+<p>下载最新稳定版并解压</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl"><span class="nb">cd</span> /mnt
+</span></span><span class="line"><span class="ln">2</span><span class="cl">wget https://github.com/openresty/lua-nginx-module/archive/v0.10.15.tar.gz
+</span></span><span class="line"><span class="ln">3</span><span class="cl">tar -xzvf v0.10.16rc5.tar.gz
+</span></span></code></pre></div><h4 id="编译nginx并加入lua模块">编译Nginx并加入lua模块</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nb">cd</span> /mnt/nginx-1.18.0
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">./configure <span class="se">\ </span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">--prefix<span class="o">=</span>/etc/nginx <span class="se">\
+</span></span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="se"></span>--sbin-path<span class="o">=</span>/usr/sbin/nginx <span class="se">\
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="se"></span>--modules-path<span class="o">=</span>/usr/lib64/nginx/modules <span class="se">\
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="se"></span>--conf-path<span class="o">=</span>/etc/nginx/nginx.conf <span class="se">\
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="se"></span>--error-log-path<span class="o">=</span>/var/log/nginx/error.log <span class="se">\
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="se"></span>--http-log-path<span class="o">=</span>/var/log/nginx/access.log <span class="se">\
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="se"></span>--pid-path<span class="o">=</span>/var/run/nginx.pid <span class="se">\
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="se"></span>--lock-path<span class="o">=</span>/var/run/nginx.lock <span class="se">\
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="se"></span>--user<span class="o">=</span>nginx <span class="se">\
+</span></span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="se"></span>--group<span class="o">=</span>nginx <span class="se">\
+</span></span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="se"></span>--with-http_gzip_static_module <span class="se">\
+</span></span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="se"></span>--with-http_realip_module <span class="se">\
+</span></span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="se"></span>--with-http_ssl_module <span class="se">\
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="se"></span>--with-openssl<span class="o">=</span>/mnt/openssl-1.1.1g <span class="se">\
+</span></span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="se"></span>--with-zlib<span class="o">=</span>/mnt/zlib-1.2.11 <span class="se">\
+</span></span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="se"></span>--with-pcre<span class="o">=</span>/mnt/pcre-8.44 <span class="se">\
+</span></span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="se"></span>--add-module<span class="o">=</span>/mnt/lua-nginx-module-0.10.15 <span class="se">\
+</span></span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="se"></span>--add-module<span class="o">=</span>/mnt/ngx_devel_kit-0.3.1
+</span></span></code></pre></div><blockquote>
+<p>其中的openssl,pcre以及zlib需要额外下载并解压到/mnt目录下</p>
+</blockquote>
+<p>启动nginx发现报错</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">[root@k8s-node mnt]# nginx
+</span></span><span class="line"><span class="ln">2</span><span class="cl">nginx: error while loading shared libraries: libluajit-5.1.so.2: cannot open shared object file: No such file or directory
+</span></span></code></pre></div><p>解决办法</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">echo &#34;/usr/local/luajit/lib/&#34; &gt;&gt; /etc/ld.so.conf
+</span></span><span class="line"><span class="ln">2</span><span class="cl">ldconfig
+</span></span></code></pre></div><p>在默认的location中加入如下指令，访问测试</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">content_by_lua</span> <span class="s">&#39;ngx.say(&#34;hello,</span> <span class="s">lua&#34;)&#39;</span><span class="p">;</span>
+</span></span></code></pre></div><p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/lua.png"
+        data-srcset="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/lua.png, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/lua.png 1.5x, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/lua.png 2x"
+        data-sizes="auto"
+        alt="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/lua.png"
+        title="avatar" />安装成功</p>
+<h3 id="方法二-直接安装openresty">方法二 ：直接安装OpenResty</h3>
+<blockquote>
+<p>OpenResty是一个基于Nginx与 Lua 的高性能 Web 平台，其内部集成了大量精良的 Lua 库、第三方模块以及大多数的依赖项。用于方便地搭建能够处理超高并发、扩展性极高的动态 Web 应用、Web 服务和动态网关。<a href="http://openresty.org/en/download.html" target="_blank" rel="noopener noreffer">最新版Openresty</a>
+</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nb">cd</span> /opt 
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">tar -xzvf openresty-1.15.8.3.tar.gz
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">./configure <span class="se">\ </span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">--prefix<span class="o">=</span>/opt/openresty <span class="se">\
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="se"></span>--with-pcre<span class="o">=</span>/opt/pcre-8.44 <span class="se">\
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="se"></span>--with-zlib<span class="o">=</span>/opt/zlib-1.2.11 <span class="se">\ </span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">--with-openssl<span class="o">=</span>/opt/openssl-1.1.1g <span class="se">\
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="se"></span>--with-poll_module <span class="se">\
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="se"></span>--with-http_v2_module <span class="se">\
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="se"></span>--with-http_realip_module <span class="se">\
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="se"></span>--with-http_addition_module <span class="se">\
+</span></span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="se"></span>--with-stream <span class="se">\
+</span></span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="se"></span>--with-stream_ssl_module <span class="se">\
+</span></span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="se"></span>--with-stream_ssl_preread_module<span class="se">\
+</span></span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="se"></span>--with-http_ssl_module
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">gmake
+</span></span><span class="line"><span class="ln">2</span><span class="cl">gmake install
+</span></span></code></pre></div><p>按方法一测试可以访问即可</p>
+<h3 id="waf模块安装">WAF模块安装</h3>
+<p>ngx_lua_waf项目地址：https://github.com/loveshell/ngx_lua_waf.git</p>
+<p>这里以Openresty为例，Nginx方法类似</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">cd /opt/openresty/lualib
+</span></span><span class="line"><span class="ln">2</span><span class="cl">git clone https://github.com/loveshell/ngx_lua_waf.git waf
+</span></span></code></pre></div><p>在openresty的配置文件中添加如下配置项：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">lua_package_path</span> <span class="s">&#34;/opt/openresty/lualib/waf/?.lua&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">lua_shared_dict</span> <span class="s">limit</span> <span class="mi">10m</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">init_by_lua_file</span>  <span class="s">/opt/openresty/lualib/waf/init.lua</span><span class="p">;</span>           
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="k">access_by_lua_file</span> <span class="s">/opt/openresty/lualib/waf/waf.lua</span><span class="p">;</span>
+</span></span></code></pre></div><p>整个waf目录结构如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="o">[</span>root@k8s-node lualib<span class="o">]</span><span class="c1"># tree waf</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">waf
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">├── config.lua
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">├── init.lua
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">├── wafconf
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">│   ├── args
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">│   ├── cookie
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">│   ├── post
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">│   ├── url
+</span></span><span class="line"><span class="ln">10</span><span class="cl">│   ├── user-agent
+</span></span><span class="line"><span class="ln">11</span><span class="cl">│   └── whiteurl
+</span></span><span class="line"><span class="ln">12</span><span class="cl">└── waf.lua
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="m">1</span> directory, <span class="m">9</span> files
+</span></span></code></pre></div><p>config.lua中定义了整个waf的配置，详细如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c1">#拦截规则的存放目录</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="nv">RulePath</span> <span class="o">=</span> <span class="s2">&#34;/opt/openresty/lualib/waf/wafconf/&#34;</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="c1">#是否开启拦截日志记录</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="nv">attacklog</span> <span class="o">=</span> <span class="s2">&#34;on&#34;</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="c1">#拦截日志的记录目录，nginx的worker进程需要对该目录有权限</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="nv">logdir</span> <span class="o">=</span> <span class="s2">&#34;/opt/openresty/nginx/logs/&#34;</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="c1">#是否开启url拦截</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="nv">UrlDeny</span><span class="o">=</span><span class="s2">&#34;on&#34;</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="c1">#是否开启拦截重定向</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="nv">Redirect</span><span class="o">=</span><span class="s2">&#34;on&#34;</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="c1">#是否开启cookie攻击防护</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="nv">CookieMatch</span><span class="o">=</span><span class="s2">&#34;on&#34;</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="c1">#是否开启post攻击防护</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="nv">postMatch</span><span class="o">=</span><span class="s2">&#34;on&#34;</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="nv">whiteModule</span><span class="o">=</span><span class="s2">&#34;on&#34;</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="c1">#禁止访问的文件扩展名</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="nv">black_fileExt</span><span class="o">={</span><span class="s2">&#34;php&#34;</span>,<span class="s2">&#34;jsp&#34;</span><span class="o">}</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="c1">#IP地址白名单</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="nv">ipWhitelist</span><span class="o">={</span><span class="s2">&#34;127.0.0.1&#34;</span><span class="o">}</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="c1">#IP地址黑名单</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl"><span class="nv">ipBlocklist</span><span class="o">={</span><span class="s2">&#34;1.0.0.1&#34;</span><span class="o">}</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="c1">#是否开启CC攻击防护</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="nv">CCDeny</span><span class="o">=</span><span class="s2">&#34;off&#34;</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl"><span class="c1">#定义CC攻击速率，该例为每60秒100次请求</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="nv">CCrate</span><span class="o">=</span><span class="s2">&#34;100/60&#34;</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl"><span class="c1">#定义重定向后的html页面</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl"><span class="nv">html</span><span class="o">=[[</span>...<span class="o">]]</span>
+</span></span></code></pre></div><p>拦截测试：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1">#出现拦截页面即表示安装成功</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">curl http://www.example.com/test.php?id<span class="o">=</span>../etc/passwd
+</span></span></code></pre></div><p>相关日志：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">192.168.0.101 [2020-06-20 01:44:01] &#34;GET localhost/index.php?id=/../../../etc/passwd&#34; &#34;-&#34;  &#34;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36&#34; &#34;\.\./&#34;
+</span></span></code></pre></div></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-06-20</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/nginx/">Nginx</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/%E5%88%9B%E5%BB%BA%E5%B8%A6%E6%9C%89%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BA%93%E7%9A%84mysql%E9%95%9C%E5%83%8F/" class="prev" rel="prev" title="创建带有自定义库的Mysql镜像"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>创建带有自定义库的Mysql镜像</a>
+            <a href="/posts/openssh%E5%8D%87%E7%BA%A7/" class="next" rel="next" title="OpenSSH升级">OpenSSH升级<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
+</div>
+<div id="comments"><div id="valine" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://valine.js.org/">Valine</a>.
+            </noscript></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork">
+				Powered By <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" width="20" height="10" style="fill: #ff6a00" class="sc-CB-bczRLJ CB-fQyPEP"><path d="M21.4 22.4h21.2v-4.8H21.4z"></path><path d="M53.3 0H39.2l3.4 4.8L52.9 8c1.9.6 3.1 2.3 3.1 4.3v15.4c0 2-1.2 3.7-3.1 4.3l-10.3 3.2-3.4 4.8h14.1c6 0 10.7-4.8 10.7-10.7V10.7C64 4.7 59.2 0 53.3 0M10.7 0h14.1l-3.4 4.8L11.1 8A4.5 4.5 0 0 0 8 12.3v15.4c0 2 1.2 3.7 3.1 4.3l10.3 3.2 3.4 4.8H10.7C4.7 40 0 35.2 0 29.3V10.7C0 4.7 4.8 0 10.7 0"></path></svg><a href="https://www.aliyun.com">Aliyun</a><br /><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2019 - 2023</span><span class="icp-splitter">&nbsp;|&nbsp;</span><br class="icp-br"/>
+                    <span class="icp">苏ICP备19065273号</span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/valine/valine.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/valine@1.4.18/dist/Valine.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/algoliasearch@4.13.0/dist/algoliasearch-lite.umd.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":50},"comment":{"valine":{"appId":"IyRdCooou4lRgtrqYYEIDgRK-gzGzoHsz","appKey":"3hXIq4IuQBcg76WWjetWOrMO","avatar":"mp","el":"#valine","emojiCDN":"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/","emojiMaps":{"100":"1f4af.png","alien":"1f47d.png","anger":"1f4a2.png","angry":"1f620.png","anguished":"1f627.png","astonished":"1f632.png","black_heart":"1f5a4.png","blue_heart":"1f499.png","blush":"1f60a.png","bomb":"1f4a3.png","boom":"1f4a5.png","broken_heart":"1f494.png","brown_heart":"1f90e.png","clown_face":"1f921.png","cold_face":"1f976.png","cold_sweat":"1f630.png","confounded":"1f616.png","confused":"1f615.png","cry":"1f622.png","crying_cat_face":"1f63f.png","cupid":"1f498.png","dash":"1f4a8.png","disappointed":"1f61e.png","disappointed_relieved":"1f625.png","dizzy":"1f4ab.png","dizzy_face":"1f635.png","drooling_face":"1f924.png","exploding_head":"1f92f.png","expressionless":"1f611.png","face_vomiting":"1f92e.png","face_with_cowboy_hat":"1f920.png","face_with_hand_over_mouth":"1f92d.png","face_with_head_bandage":"1f915.png","face_with_monocle":"1f9d0.png","face_with_raised_eyebrow":"1f928.png","face_with_rolling_eyes":"1f644.png","face_with_symbols_on_mouth":"1f92c.png","face_with_thermometer":"1f912.png","fearful":"1f628.png","flushed":"1f633.png","frowning":"1f626.png","ghost":"1f47b.png","gift_heart":"1f49d.png","green_heart":"1f49a.png","grimacing":"1f62c.png","grin":"1f601.png","grinning":"1f600.png","hankey":"1f4a9.png","hear_no_evil":"1f649.png","heart":"2764-fe0f.png","heart_decoration":"1f49f.png","heart_eyes":"1f60d.png","heart_eyes_cat":"1f63b.png","heartbeat":"1f493.png","heartpulse":"1f497.png","heavy_heart_exclamation_mark_ornament":"2763-fe0f.png","hole":"1f573-fe0f.png","hot_face":"1f975.png","hugging_face":"1f917.png","hushed":"1f62f.png","imp":"1f47f.png","innocent":"1f607.png","japanese_goblin":"1f47a.png","japanese_ogre":"1f479.png","joy":"1f602.png","joy_cat":"1f639.png","kiss":"1f48b.png","kissing":"1f617.png","kissing_cat":"1f63d.png","kissing_closed_eyes":"1f61a.png","kissing_heart":"1f618.png","kissing_smiling_eyes":"1f619.png","laughing":"1f606.png","left_speech_bubble":"1f5e8-fe0f.png","love_letter":"1f48c.png","lying_face":"1f925.png","mask":"1f637.png","money_mouth_face":"1f911.png","nauseated_face":"1f922.png","nerd_face":"1f913.png","neutral_face":"1f610.png","no_mouth":"1f636.png","open_mouth":"1f62e.png","orange_heart":"1f9e1.png","partying_face":"1f973.png","pensive":"1f614.png","persevere":"1f623.png","pleading_face":"1f97a.png","pouting_cat":"1f63e.png","purple_heart":"1f49c.png","rage":"1f621.png","relaxed":"263a-fe0f.png","relieved":"1f60c.png","revolving_hearts":"1f49e.png","right_anger_bubble":"1f5ef-fe0f.png","robot_face":"1f916.png","rolling_on_the_floor_laughing":"1f923.png","scream":"1f631.png","scream_cat":"1f640.png","see_no_evil":"1f648.png","shushing_face":"1f92b.png","skull":"1f480.png","skull_and_crossbones":"2620-fe0f.png","sleeping":"1f634.png","sleepy":"1f62a.png","slightly_frowning_face":"1f641.png","slightly_smiling_face":"1f642.png","smile":"1f604.png","smile_cat":"1f638.png","smiley":"1f603.png","smiley_cat":"1f63a.png","smiling_face_with_3_hearts":"1f970.png","smiling_imp":"1f608.png","smirk":"1f60f.png","smirk_cat":"1f63c.png","sneezing_face":"1f927.png","sob":"1f62d.png","space_invader":"1f47e.png","sparkling_heart":"1f496.png","speak_no_evil":"1f64a.png","speech_balloon":"1f4ac.png","star-struck":"1f929.png","stuck_out_tongue":"1f61b.png","stuck_out_tongue_closed_eyes":"1f61d.png","stuck_out_tongue_winking_eye":"1f61c.png","sunglasses":"1f60e.png","sweat":"1f613.png","sweat_drops":"1f4a6.png","sweat_smile":"1f605.png","thinking_face":"1f914.png","thought_balloon":"1f4ad.png","tired_face":"1f62b.png","triumph":"1f624.png","two_hearts":"1f495.png","unamused":"1f612.png","upside_down_face":"1f643.png","weary":"1f629.png","white_frowning_face":"2639-fe0f.png","white_heart":"1f90d.png","wink":"1f609.png","woozy_face":"1f974.png","worried":"1f61f.png","yawning_face":"1f971.png","yellow_heart":"1f49b.png","yum":"1f60b.png","zany_face":"1f92a.png","zipper_mouth_face":"1f910.png","zzz":"1f4a4.png"},"enableQQ":false,"highlight":true,"lang":"zh-CN","pageSize":10,"placeholder":"你的评论 ...","recordIP":true,"serverURLs":"https://iyrdcooo.lc-cn-n1-shared.com","visitor":true}},"search":{"algoliaAppID":"RALZ9QXE5X","algoliaIndex":"search","algoliaSearchKey":"edb3145c2e9fe9c9c4eb49630c0dc4f6","highlightTag":"em","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":30,"type":"algolia"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

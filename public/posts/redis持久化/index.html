@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Redis持久化 - 御秋博客</title><meta name="Description" content="Hugo theme - LoveIt"><meta property="og:title" content="Redis持久化" />
+<meta property="og:description" content="每隔一段时间Redis会把数据持久化到硬盘进行数据的保存。其中持久化方案包括RDB和AOF模式  ，其中RDB全称为Redis DataBase，AOF全称为Append Only File。Redis默认使用的是RDB方式进行数据的持久化。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://www.freethinker.top/posts/redis%E6%8C%81%E4%B9%85%E5%8C%96/" /><meta property="og:image" content="https://www.freethinker.top/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-04-25T20:24:06+00:00" />
+<meta property="article:modified_time" content="2020-04-25T20:24:06+00:00" /><meta property="og:site_name" content="御秋博客" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://www.freethinker.top/logo.png"/>
+
+<meta name="twitter:title" content="Redis持久化"/>
+<meta name="twitter:description" content="每隔一段时间Redis会把数据持久化到硬盘进行数据的保存。其中持久化方案包括RDB和AOF模式  ，其中RDB全称为Redis DataBase，AOF全称为Append Only File。Redis默认使用的是RDB方式进行数据的持久化。"/>
+<meta name="application-name" content="御秋博客">
+<meta name="apple-mobile-web-app-title" content="御秋博客"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://www.freethinker.top/posts/redis%E6%8C%81%E4%B9%85%E5%8C%96/" /><link rel="prev" href="https://www.freethinker.top/posts/dockerfile%E4%B8%ADrun-cmd%E4%BB%A5%E5%8F%8Aentrypoint%E7%9A%84%E5%8C%BA%E5%88%AB/" /><link rel="next" href="https://www.freethinker.top/posts/nginx-limit%E6%A8%A1%E5%9D%97/" /><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Redis持久化",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/www.freethinker.top\/posts\/redis%E6%8C%81%E4%B9%85%E5%8C%96\/"
+        },"image": ["https:\/\/www.freethinker.top\/images\/Apple-Devices-Preview.png"],"genre": "posts","keywords": "Redis","wordcount":  147 ,
+        "url": "https:\/\/www.freethinker.top\/posts\/redis%E6%8C%81%E4%B9%85%E5%8C%96\/","datePublished": "2020-04-25T20:24:06+00:00","dateModified": "2020-04-25T20:24:06+00:00","publisher": {
+            "@type": "Organization",
+            "name": "xxxx","logo": "https:\/\/www.freethinker.top\/images\/avatar.png"},"author": {
+                "@type": "Person",
+                "name": "ltzhang"
+            },"description": ""
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="御秋博客">御秋博客</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="御秋博客">御秋博客</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><div class="search-dropdown desktop">
+        <div id="search-dropdown-desktop"></div>
+    </div>
+    <div class="search-dropdown mobile">
+        <div id="search-dropdown-mobile"></div>
+    </div><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Redis持久化</h1><div class="post-meta">
+            <div class="post-meta-line">&nbsp;<span class="post-category">收录于 <a href="/categories/redis/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Redis</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2020-04-25">2020-04-25</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;约 147 字&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;预计阅读 1 分钟&nbsp;<span id="/posts/redis%E6%8C%81%E4%B9%85%E5%8C%96/" class="leancloud_visitors" data-flag-title="Redis持久化">
+                        <i class="far fa-eye fa-fw" aria-hidden="true"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;次阅读
+                    </span>&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#rdb">RDB</a>
+          <ul>
+            <li><a href="#持久化配置">持久化配置</a></li>
+            <li><a href="#备份文件配置">备份文件配置</a></li>
+            <li><a href="#其它选项">其它选项</a></li>
+          </ul>
+        </li>
+        <li><a href="#aof">AOF</a>
+          <ul>
+            <li><a href="#持久化配置-1">持久化配置</a></li>
+            <li><a href="#日志重写">日志重写</a></li>
+          </ul>
+        </li>
+        <li><a href="#总结">总结</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>每隔一段时间Redis会把数据持久化到硬盘进行数据的保存。其中持久化方案包括RDB和AOF模式  ，其中RDB全称为Redis DataBase，AOF全称为Append Only File。Redis默认使用的是RDB方式进行数据的持久化。</p>
+<h3 id="rdb">RDB</h3>
+<p>从英文的全称可以看出区别，RDB是把所有的数据进行以快照的方式进行持久化。快照文件的生成可以使用两个命令来完成，即<code>save</code>和<code>bgsave</code>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">127.0.0.1:6379&gt; help save
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  SAVE -
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  summary: Synchronously save the dataset to disk
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  since: 1.0.0
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  group: server
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">127.0.0.1:6379&gt; help bgsave
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  BGSAVE -
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  summary: Asynchronously save the dataset to disk
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  since: 1.0.0
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  group: server
+</span></span></code></pre></div><p>从summary可以看出，<code>save</code>是以同步的方式把数据以快照方式写入磁盘，而<code>bgsave</code>是异步的写入。所谓同步即redis在执行rdb备份时，期间redis不能响应外部的请求直到完成本次备份。而异步是redis调用Linux的内核函数fork()生成一个子进程，并且由该子进程来完成数据的持久化，所以备份时redis仍然可以响应外部的请求。</p>
+<h4 id="持久化配置">持久化配置</h4>
+<p>配置文件<code>redis.conf</code>中的save即为<code>bgsave</code>模式，官方配置文件中有save三种默认的选项配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">218 save 900 1                     #每900秒(15分钟)有1个键更新就执行一次bgsave
+</span></span><span class="line"><span class="ln">2</span><span class="cl">219 save 300 10                    #每300秒(5分钟)有10个键更新就执行一次bgsave
+</span></span><span class="line"><span class="ln">3</span><span class="cl">220 save 60 10000                  #每60秒(1分钟)有10000个键更新就执行一次bgsave
+</span></span></code></pre></div><p>三种配置不是互斥的，只要有一个满足了条件就会触发备份操作。同时设置多个save是为了匹配不同的场景需要。若按照上面配置<code>save 60 10000</code>进行，并且redis在一分钟内持续更新了10000个键，但是服务器却在第59.99秒发生宕机，那后果可想而知:这一分钟内更新的所有键将全部丢失并且无法恢复。生产环境需要根据请求的调整合适的配置。</p>
+<h4 id="备份文件配置">备份文件配置</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">253 dbfilename dump.rdb
+</span></span><span class="line"><span class="ln">2</span><span class="cl">263 dir ./
+</span></span></code></pre></div><p>默认情况下备份保存在./dump.rdb中,默认在配置文件<code>redis.conf</code>所在的目录。可以手动更改配置文件备份的地址和文件名重启redis，也可以在redis命令行工具中热变更，比如将备份调整为/var/redis/redis-6379.rdb:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">127.0.0.1:6379&gt; CONFIG SET dir /var/redis
+</span></span><span class="line"><span class="ln">2</span><span class="cl">OK
+</span></span><span class="line"><span class="ln">3</span><span class="cl">127.0.0.1:6379&gt; CONFIG SET dbfilename resid-6379.rdb
+</span></span><span class="line"><span class="ln">4</span><span class="cl">OK
+</span></span></code></pre></div><p>完成后可以使用<code>CONFIG REWRITE</code>将变更合并到配置文件中。</p>
+<h4 id="其它选项">其它选项</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">241 rdbcompression yes
+</span></span></code></pre></div><p>将备份出的rdb文件按照LZF算法进行压缩，可以大大减少备份文件的体积，此选项是默认开启的。当然为了节省CPU时间，可以改为no,但是快照文件的大小会大大增加。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">250 rdbchecksum yes
+</span></span></code></pre></div><p>默认情况下，一串CRC64d的检验和会追加到快照文件的尾部，这个可以使得快照文件更耐破坏。但是在保存和加载快照文件会损失约10%的性能。</p>
+<h3 id="aof">AOF</h3>
+<p>与RDB模式不同的是，AOF仅仅保存修改命令，类似<strong>mysql</strong>的bin-log日志。也就是说RDB保存的是数据快照，AOF保存的是修改命令。默认情况下AOF是关闭的，Redis仅使用RDB方式持久化数据。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">699 appendonly no
+</span></span></code></pre></div><p>在命令行中使用 <code>CONFIG SET appendonly yes</code>来开启AOF持久化模式，同样的可以使用<code>CONFIG REWRITE</code>将变更合并到配置文件中。</p>
+<p>相应的持久化数据会默认保存到appendonly.aof中，路径即是<code>dir</code>中定义的路径。如果变更在写入过程中服务器发生了宕机，变更的命令位于来不及写入到**.aof**文件,也会造成数据丢失。Redis通过fsync()系统调用将执行的命令写入磁盘，这里Redis也提供了三种模式用于控制fsync的速度。</p>
+<h4 id="持久化配置-1">持久化配置</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">728 appendfsync always
+</span></span><span class="line"><span class="ln">2</span><span class="cl">729 appendfsync everysec
+</span></span><span class="line"><span class="ln">3</span><span class="cl">730 appendfsync no
+</span></span></code></pre></div><p><strong>always</strong>:Redis每次操作都写入**.aof**文件中，最慢但也是最安全的选项，几乎不存在数据的丢失</p>
+<p><strong>no</strong>:Redis从不执行fsync()系统调用，而是让操作系统决定什么时候将数据写入磁盘，最快但数据存在数据丢失风险</p>
+<p><strong>everysecond</strong>:每秒调用一次fsync()，折中方案也是默认配置</p>
+<h4 id="日志重写">日志重写</h4>
+<p>如果生产环境开启了AOF模式，那么生成的.aof文件会变得越来越大。aof重写的主要包括<strong>1.删除抵消的命令</strong> <strong>2.合并重复的命令</strong>，比如说一个Python Django项目使用Redis来作为计数器，该计数器在5分钟发生了1000次的值更新，但是数据集中包含最终值的键只有一个，而在AOF中却包含1000个条目，不需要其中的999个条目来重建当前状态。所以这999个条目可以在重建时可以全部删除。</p>
+<p>Redis支持一个有趣的功能：它可以在后台fork()出一个子进程重建AOF，而不会中断对客户端的服务。每当您发出<strong>BGREWRITEAOF</strong>，Redis都会编写最短的命令序列来重建内存中的当前数据集。除了手动的在Redis命令行中手动执行外，还可以在配置文件中声明自动重建的配置。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">770 auto-aof-rewrite-percentage 100
+</span></span><span class="line"><span class="ln">2</span><span class="cl">771 auto-aof-rewrite-min-size 64mb
+</span></span></code></pre></div><p><code>auto-aof-rewrite-min-size 64mb</code>指的是数据量达到64mb就触发执行一次重写操作，如果redis启动时数据量大于64mb，则会自动进行一次重写操作。此后这条配置项将不再有效。</p>
+<p><code>auto-aof-rewrite-percentage 100</code>此第一次重写后后当数据再次达到100%，即128mb时，会再次执行一次重写操作，以此类推，不断执行自动重写。</p>
+<p>如果<code>auto-aof-rewrite-percentage 0</code>,则会禁用自动重写</p>
+<p><code>auto-aof-rewrite-min-size</code>的值不能太小，否则会频繁重写造成性能降低</p>
+<h3 id="总结">总结</h3>
+<ul>
+<li>RDB持久性按指定的时间间隔执行数据集的时间点快照</li>
+<li>AOF持久性会记录服务器接收的每个写入操作，这些操作将在服务器启动时再次播放，以重建原始数据集。使用与Redis协议本身相同的格式记录命令，并且仅采用追加方式。当日志太大时，Redis可以在后台重写日志</li>
+<li>如果希望，只要您的数据在服务器运行时就一直存在，则可以完全禁用持久性。当做memcache使用</li>
+<li>可以在同一实例中同时合并AOF和RDB。请注意，在这种情况下，当Redis重新启动时，AOF文件将用于重建原始数据集，因为它可以保证是最完整的</li>
+</ul></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-04-25</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/redis/">Redis</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/dockerfile%E4%B8%ADrun-cmd%E4%BB%A5%E5%8F%8Aentrypoint%E7%9A%84%E5%8C%BA%E5%88%AB/" class="prev" rel="prev" title="Dockerfile中RUN CMD以及ENTRYPOINT的区别"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>Dockerfile中RUN CMD以及ENTRYPOINT的区别</a>
+            <a href="/posts/nginx-limit%E6%A8%A1%E5%9D%97/" class="next" rel="next" title="Nginx-Limit模块">Nginx-Limit模块<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
+</div>
+<div id="comments"><div id="valine" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://valine.js.org/">Valine</a>.
+            </noscript></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork">
+				Powered By <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" width="20" height="10" style="fill: #ff6a00" class="sc-CB-bczRLJ CB-fQyPEP"><path d="M21.4 22.4h21.2v-4.8H21.4z"></path><path d="M53.3 0H39.2l3.4 4.8L52.9 8c1.9.6 3.1 2.3 3.1 4.3v15.4c0 2-1.2 3.7-3.1 4.3l-10.3 3.2-3.4 4.8h14.1c6 0 10.7-4.8 10.7-10.7V10.7C64 4.7 59.2 0 53.3 0M10.7 0h14.1l-3.4 4.8L11.1 8A4.5 4.5 0 0 0 8 12.3v15.4c0 2 1.2 3.7 3.1 4.3l10.3 3.2 3.4 4.8H10.7C4.7 40 0 35.2 0 29.3V10.7C0 4.7 4.8 0 10.7 0"></path></svg><a href="https://www.aliyun.com">Aliyun</a><br /><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2019 - 2023</span><span class="icp-splitter">&nbsp;|&nbsp;</span><br class="icp-br"/>
+                    <span class="icp">苏ICP备19065273号</span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/valine/valine.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/valine@1.4.18/dist/Valine.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/algoliasearch@4.13.0/dist/algoliasearch-lite.umd.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":50},"comment":{"valine":{"appId":"IyRdCooou4lRgtrqYYEIDgRK-gzGzoHsz","appKey":"3hXIq4IuQBcg76WWjetWOrMO","avatar":"mp","el":"#valine","emojiCDN":"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/","emojiMaps":{"100":"1f4af.png","alien":"1f47d.png","anger":"1f4a2.png","angry":"1f620.png","anguished":"1f627.png","astonished":"1f632.png","black_heart":"1f5a4.png","blue_heart":"1f499.png","blush":"1f60a.png","bomb":"1f4a3.png","boom":"1f4a5.png","broken_heart":"1f494.png","brown_heart":"1f90e.png","clown_face":"1f921.png","cold_face":"1f976.png","cold_sweat":"1f630.png","confounded":"1f616.png","confused":"1f615.png","cry":"1f622.png","crying_cat_face":"1f63f.png","cupid":"1f498.png","dash":"1f4a8.png","disappointed":"1f61e.png","disappointed_relieved":"1f625.png","dizzy":"1f4ab.png","dizzy_face":"1f635.png","drooling_face":"1f924.png","exploding_head":"1f92f.png","expressionless":"1f611.png","face_vomiting":"1f92e.png","face_with_cowboy_hat":"1f920.png","face_with_hand_over_mouth":"1f92d.png","face_with_head_bandage":"1f915.png","face_with_monocle":"1f9d0.png","face_with_raised_eyebrow":"1f928.png","face_with_rolling_eyes":"1f644.png","face_with_symbols_on_mouth":"1f92c.png","face_with_thermometer":"1f912.png","fearful":"1f628.png","flushed":"1f633.png","frowning":"1f626.png","ghost":"1f47b.png","gift_heart":"1f49d.png","green_heart":"1f49a.png","grimacing":"1f62c.png","grin":"1f601.png","grinning":"1f600.png","hankey":"1f4a9.png","hear_no_evil":"1f649.png","heart":"2764-fe0f.png","heart_decoration":"1f49f.png","heart_eyes":"1f60d.png","heart_eyes_cat":"1f63b.png","heartbeat":"1f493.png","heartpulse":"1f497.png","heavy_heart_exclamation_mark_ornament":"2763-fe0f.png","hole":"1f573-fe0f.png","hot_face":"1f975.png","hugging_face":"1f917.png","hushed":"1f62f.png","imp":"1f47f.png","innocent":"1f607.png","japanese_goblin":"1f47a.png","japanese_ogre":"1f479.png","joy":"1f602.png","joy_cat":"1f639.png","kiss":"1f48b.png","kissing":"1f617.png","kissing_cat":"1f63d.png","kissing_closed_eyes":"1f61a.png","kissing_heart":"1f618.png","kissing_smiling_eyes":"1f619.png","laughing":"1f606.png","left_speech_bubble":"1f5e8-fe0f.png","love_letter":"1f48c.png","lying_face":"1f925.png","mask":"1f637.png","money_mouth_face":"1f911.png","nauseated_face":"1f922.png","nerd_face":"1f913.png","neutral_face":"1f610.png","no_mouth":"1f636.png","open_mouth":"1f62e.png","orange_heart":"1f9e1.png","partying_face":"1f973.png","pensive":"1f614.png","persevere":"1f623.png","pleading_face":"1f97a.png","pouting_cat":"1f63e.png","purple_heart":"1f49c.png","rage":"1f621.png","relaxed":"263a-fe0f.png","relieved":"1f60c.png","revolving_hearts":"1f49e.png","right_anger_bubble":"1f5ef-fe0f.png","robot_face":"1f916.png","rolling_on_the_floor_laughing":"1f923.png","scream":"1f631.png","scream_cat":"1f640.png","see_no_evil":"1f648.png","shushing_face":"1f92b.png","skull":"1f480.png","skull_and_crossbones":"2620-fe0f.png","sleeping":"1f634.png","sleepy":"1f62a.png","slightly_frowning_face":"1f641.png","slightly_smiling_face":"1f642.png","smile":"1f604.png","smile_cat":"1f638.png","smiley":"1f603.png","smiley_cat":"1f63a.png","smiling_face_with_3_hearts":"1f970.png","smiling_imp":"1f608.png","smirk":"1f60f.png","smirk_cat":"1f63c.png","sneezing_face":"1f927.png","sob":"1f62d.png","space_invader":"1f47e.png","sparkling_heart":"1f496.png","speak_no_evil":"1f64a.png","speech_balloon":"1f4ac.png","star-struck":"1f929.png","stuck_out_tongue":"1f61b.png","stuck_out_tongue_closed_eyes":"1f61d.png","stuck_out_tongue_winking_eye":"1f61c.png","sunglasses":"1f60e.png","sweat":"1f613.png","sweat_drops":"1f4a6.png","sweat_smile":"1f605.png","thinking_face":"1f914.png","thought_balloon":"1f4ad.png","tired_face":"1f62b.png","triumph":"1f624.png","two_hearts":"1f495.png","unamused":"1f612.png","upside_down_face":"1f643.png","weary":"1f629.png","white_frowning_face":"2639-fe0f.png","white_heart":"1f90d.png","wink":"1f609.png","woozy_face":"1f974.png","worried":"1f61f.png","yawning_face":"1f971.png","yellow_heart":"1f49b.png","yum":"1f60b.png","zany_face":"1f92a.png","zipper_mouth_face":"1f910.png","zzz":"1f4a4.png"},"enableQQ":false,"highlight":true,"lang":"zh-CN","pageSize":10,"placeholder":"你的评论 ...","recordIP":true,"serverURLs":"https://iyrdcooo.lc-cn-n1-shared.com","visitor":true}},"search":{"algoliaAppID":"RALZ9QXE5X","algoliaIndex":"search","algoliaSearchKey":"edb3145c2e9fe9c9c4eb49630c0dc4f6","highlightTag":"em","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":30,"type":"algolia"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

@@ -1,0 +1,96 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>所有文章 - 御秋博客</title>
+        <link>https://www.freethinker.top/posts/</link>
+        <description>所有文章 | 御秋博客</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>395108141t@gmail.com (ltzhang)</managingEditor>
+            <webMaster>395108141t@gmail.com (ltzhang)</webMaster><lastBuildDate>Tue, 09 May 2023 00:00:00 &#43;0000</lastBuildDate><atom:link href="https://www.freethinker.top/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>k8s证书说明及更新方式</title>
+    <link>https://www.freethinker.top/posts/k8s%E8%AF%81%E4%B9%A6%E8%AF%B4%E6%98%8E%E5%8F%8A%E6%9B%B4%E6%96%B0%E6%96%B9%E5%BC%8F/</link>
+    <pubDate>Tue, 09 May 2023 00:00:00 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/k8s%E8%AF%81%E4%B9%A6%E8%AF%B4%E6%98%8E%E5%8F%8A%E6%9B%B4%E6%96%B0%E6%96%B9%E5%BC%8F/</guid>
+    <description><![CDATA[<p>本篇文章主要介绍k8s集群中证书的作用位置，并且以创建pod和exec为例说明证书调用，最后写了部署监控证书有效期的步骤。</p>]]></description>
+</item>
+<item>
+    <title>Jumpserver使用手册</title>
+    <link>https://www.freethinker.top/posts/jumpserver%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/</link>
+    <pubDate>Tue, 10 May 2022 23:50:47 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/jumpserver%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/</guid>
+    <description><![CDATA[<h3 id="概述">概述</h3>
+<p>堡垒机4A模型</p>
+<p></p>]]></description>
+</item>
+<item>
+    <title>gRPC使用自签证书实现双向加密</title>
+    <link>https://www.freethinker.top/posts/grpc%E4%BD%BF%E7%94%A8%E8%87%AA%E7%AD%BE%E8%AF%81%E4%B9%A6%E5%AE%9E%E7%8E%B0%E5%8F%8C%E5%90%91%E5%8A%A0%E5%AF%86/</link>
+    <pubDate>Wed, 28 Apr 2021 10:50:47 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/grpc%E4%BD%BF%E7%94%A8%E8%87%AA%E7%AD%BE%E8%AF%81%E4%B9%A6%E5%AE%9E%E7%8E%B0%E5%8F%8C%E5%90%91%E5%8A%A0%E5%AF%86/</guid>
+    <description><![CDATA[<h3 id="前言">前言</h3>
+<p>最近在学习gRPC，在生成服务端证书与客户端实现双向加密中遇到了证书错误，特此记录下过程及解决方法。</p>]]></description>
+</item>
+<item>
+    <title>初试Pod垂直扩缩容VPA</title>
+    <link>https://www.freethinker.top/posts/%E5%88%9D%E8%AF%95pod%E5%9E%82%E7%9B%B4%E6%89%A9%E7%BC%A9%E5%AE%B9vpa/</link>
+    <pubDate>Thu, 11 Mar 2021 23:50:47 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/%E5%88%9D%E8%AF%95pod%E5%9E%82%E7%9B%B4%E6%89%A9%E7%BC%A9%E5%AE%B9vpa/</guid>
+    <description><![CDATA[<h3 id="概念">概念</h3>
+<p>相对于水平自动扩缩容(HPA)在pod资源紧张时扩充pod个数来平衡负载。Pod的垂直扩容会<em>自动</em>调整Pod资源申请的requests值及limits值，它会依据pod当前运行状况动态地为Pod资源申请CPU及内存使用量。解放了手动设置request值及limits值的难点，使Pod运行更加智能。<strong>目前为Beta阶段</strong></p>]]></description>
+</item>
+<item>
+    <title>基于自定义指标的HPA实战</title>
+    <link>https://www.freethinker.top/posts/%E5%9F%BA%E4%BA%8E%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8C%87%E6%A0%87%E7%9A%84hpa%E5%AE%9E%E6%88%98/</link>
+    <pubDate>Wed, 10 Mar 2021 23:50:47 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/%E5%9F%BA%E4%BA%8E%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8C%87%E6%A0%87%E7%9A%84hpa%E5%AE%9E%E6%88%98/</guid>
+    <description><![CDATA[<h3 id="概念">概念</h3>
+<p>Kubernetes自1.11版本开始引入了名为&quot;HorizontalPodAutoscaler&quot;的控制器用于完成Pod基于CPU使用率进行水平扩展。所谓水平扩展是在Pod中CPU的使用率达到设定的某个值时，HPA告知Pod对应的高层控制器(如Deployment、RS等控制器)。高层控制器随即创建出多个pod副本平衡负载使Pod的平均CPU使用率低于我们设定的值。当Pod的平均CPU使用率变小时，又能回收多余的Pod以避免资源浪费。</p>]]></description>
+</item>
+<item>
+    <title>Prometheus-Operator监控Nginx Ingress</title>
+    <link>https://www.freethinker.top/posts/prometheus-operator%E7%9B%91%E6%8E%A7nginx-ingress/</link>
+    <pubDate>Sun, 07 Mar 2021 11:50:47 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/prometheus-operator%E7%9B%91%E6%8E%A7nginx-ingress/</guid>
+    <description><![CDATA[<p><strong>前言</strong>：最近客户需要监控ingress流量，在查阅资料后成功部署，记录下部署的过程及遇到的问题。</p>]]></description>
+</item>
+<item>
+    <title>Etcd：NO SPACE的问题修复步骤</title>
+    <link>https://www.freethinker.top/posts/etcdno-space%E7%9A%84%E9%97%AE%E9%A2%98%E4%BF%AE%E5%A4%8D%E6%AD%A5%E9%AA%A4/</link>
+    <pubDate>Sun, 17 Jan 2021 00:00:00 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/etcdno-space%E7%9A%84%E9%97%AE%E9%A2%98%E4%BF%AE%E5%A4%8D%E6%AD%A5%E9%AA%A4/</guid>
+    <description><![CDATA[<p><code>kubectl get cs</code>时发现所有的<code>etcd</code>均返回503报错，查看etcd的告警发现有<code>NO SPACE</code>的信息且<code>etcdctl endpoints status</code>中的DB SIZE大于2GiB时。表示etcd的空间超过最大值需进行压缩。不进行压缩api-server无法继续写入数据，影响集群正常工作。</p>]]></description>
+</item>
+<item>
+    <title>Kubernetes驱逐事件分析</title>
+    <link>https://www.freethinker.top/posts/kubernetes%E9%A9%B1%E9%80%90%E4%BA%8B%E4%BB%B6%E5%88%86%E6%9E%90/</link>
+    <pubDate>Sat, 09 Jan 2021 00:00:00 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/kubernetes%E9%A9%B1%E9%80%90%E4%BA%8B%E4%BB%B6%E5%88%86%E6%9E%90/</guid>
+    <description><![CDATA[<p><strong>前言</strong>：本文主要分析了针对pod<code>custom-metrics-apiserver</code>的驱逐事件，分析相关成因并给出解决措施。</p>]]></description>
+</item>
+<item>
+    <title>一次calico-node无法启动的问题记录</title>
+    <link>https://www.freethinker.top/posts/%E4%B8%80%E6%AC%A1calico-node%E6%97%A0%E6%B3%95%E5%90%AF%E5%8A%A8%E7%9A%84%E9%97%AE%E9%A2%98%E8%AE%B0%E5%BD%95/</link>
+    <pubDate>Wed, 30 Dec 2020 22:20:00 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/%E4%B8%80%E6%AC%A1calico-node%E6%97%A0%E6%B3%95%E5%90%AF%E5%8A%A8%E7%9A%84%E9%97%AE%E9%A2%98%E8%AE%B0%E5%BD%95/</guid>
+    <description><![CDATA[<p>集群中两个节点中的<code>calico-node</code>启动后一直处于<code>crashloopbackoff</code>的分析处理</p>]]></description>
+</item>
+<item>
+    <title>Kubernetes创建名称空间账户</title>
+    <link>https://www.freethinker.top/posts/kubernetes%E5%88%9B%E5%BB%BA%E5%90%8D%E7%A7%B0%E7%A9%BA%E9%97%B4%E8%B4%A6%E6%88%B7/</link>
+    <pubDate>Sat, 26 Dec 2020 00:00:00 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/kubernetes%E5%88%9B%E5%BB%BA%E5%90%8D%E7%A7%B0%E7%A9%BA%E9%97%B4%E8%B4%A6%E6%88%B7/</guid>
+    <description><![CDATA[在一套k8s集群中会存在多个名称空间，各个名称空间由其项目组进行维护。为达到名称空间隔离，防止其他用户操作本空间下的资源，需要创建特定的config文件。使用对应的config仅能对相应名称空间下的资源进行管理。本例以k8s-api用户为例，该用户仅能操作k8s-api名称空间下的部分资源。
+创建证书 创建私钥 1 openssl genrsa -out k8s-api.key 2048 创建证书签署请求CSR 1 openssl req -new -key k8s-api.key -out k8s-api.csr -subj &#34;/CN=k8s-api&#34; 使用k8s集群的ca证书及私钥签发用户证书 1 openssl x509 -req -in k8s-api.csr \ 2 -CA /etc/kubernetes/ssl/ca.crt \ 3 -CAkey /etc/kubernetes/ssl/ca.key \ 4 -CAcreateserial \ 5 -out k8s-api.crt \ 6 -days 3560 注：签发周期为10年，实际环境取决于需求。
+生成k8s-api用户要用到的config文件 config文件存放着kubectl用来操作k8s集群用的到证书、集群信息等，位于$HOME/.kube/目录下。
+生成默认的config(此步骤结束会生成k8s-api.conf) 1 kubectl config set-cluster k8s-api \ 2 --certificate-authority=/etc/kubernetes/ssl/ca.crt \ 3 --embed-certs=true \ 4 --server=https://172.16.200.101:6443 \ 5 --kubeconfig=k8s-api.conf 注：1. --embed-certs=true: 将证书文件内嵌到config中 2.]]></description>
+</item>
+</channel>
+</rss>

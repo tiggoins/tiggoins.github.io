@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>记一次zabbix报警邮件无法接收的问题 - 御秋博客</title><meta name="Description" content="Hugo theme - LoveIt"><meta property="og:title" content="记一次zabbix报警邮件无法接收的问题" />
+<meta property="og:description" content="学习zabbix报警媒介，尝试调用shell脚本来完成邮件的发送操作时，在触发动作后，报警邮件顺利发出，但我所在的邮箱却一直没有收到报警邮件。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://www.freethinker.top/posts/%E8%AE%B0%E4%B8%80%E6%AC%A1zabbix%E6%8A%A5%E8%AD%A6%E9%82%AE%E4%BB%B6%E6%97%A0%E6%B3%95%E6%8E%A5%E6%94%B6%E7%9A%84%E9%97%AE%E9%A2%98/" /><meta property="og:image" content="https://www.freethinker.top/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-02-02T10:29:38+00:00" />
+<meta property="article:modified_time" content="2020-02-02T10:29:38+00:00" /><meta property="og:site_name" content="御秋博客" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://www.freethinker.top/logo.png"/>
+
+<meta name="twitter:title" content="记一次zabbix报警邮件无法接收的问题"/>
+<meta name="twitter:description" content="学习zabbix报警媒介，尝试调用shell脚本来完成邮件的发送操作时，在触发动作后，报警邮件顺利发出，但我所在的邮箱却一直没有收到报警邮件。"/>
+<meta name="application-name" content="御秋博客">
+<meta name="apple-mobile-web-app-title" content="御秋博客"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://www.freethinker.top/posts/%E8%AE%B0%E4%B8%80%E6%AC%A1zabbix%E6%8A%A5%E8%AD%A6%E9%82%AE%E4%BB%B6%E6%97%A0%E6%B3%95%E6%8E%A5%E6%94%B6%E7%9A%84%E9%97%AE%E9%A2%98/" /><link rel="prev" href="https://www.freethinker.top/posts/centos%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85mysql8.0/" /><link rel="next" href="https://www.freethinker.top/posts/centos7%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7/" /><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "记一次zabbix报警邮件无法接收的问题",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/www.freethinker.top\/posts\/%E8%AE%B0%E4%B8%80%E6%AC%A1zabbix%E6%8A%A5%E8%AD%A6%E9%82%AE%E4%BB%B6%E6%97%A0%E6%B3%95%E6%8E%A5%E6%94%B6%E7%9A%84%E9%97%AE%E9%A2%98\/"
+        },"image": ["https:\/\/www.freethinker.top\/images\/Apple-Devices-Preview.png"],"genre": "posts","keywords": "Monitoring, TroubleShooting","wordcount":  144 ,
+        "url": "https:\/\/www.freethinker.top\/posts\/%E8%AE%B0%E4%B8%80%E6%AC%A1zabbix%E6%8A%A5%E8%AD%A6%E9%82%AE%E4%BB%B6%E6%97%A0%E6%B3%95%E6%8E%A5%E6%94%B6%E7%9A%84%E9%97%AE%E9%A2%98\/","datePublished": "2020-02-02T10:29:38+00:00","dateModified": "2020-02-02T10:29:38+00:00","publisher": {
+            "@type": "Organization",
+            "name": "xxxx","logo": "https:\/\/www.freethinker.top\/images\/avatar.png"},"author": {
+                "@type": "Person",
+                "name": "ltzhang"
+            },"description": ""
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="御秋博客">御秋博客</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="御秋博客">御秋博客</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw" aria-hidden="true"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><div class="search-dropdown desktop">
+        <div id="search-dropdown-desktop"></div>
+    </div>
+    <div class="search-dropdown mobile">
+        <div id="search-dropdown-mobile"></div>
+    </div><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">记一次zabbix报警邮件无法接收的问题</h1><div class="post-meta">
+            <div class="post-meta-line">&nbsp;<span class="post-category">收录于 <a href="/categories/troubleshooting/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>TroubleShooting</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2020-02-02">2020-02-02</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;约 144 字&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;预计阅读 1 分钟&nbsp;<span id="/posts/%E8%AE%B0%E4%B8%80%E6%AC%A1zabbix%E6%8A%A5%E8%AD%A6%E9%82%AE%E4%BB%B6%E6%97%A0%E6%B3%95%E6%8E%A5%E6%94%B6%E7%9A%84%E9%97%AE%E9%A2%98/" class="leancloud_visitors" data-flag-title="记一次zabbix报警邮件无法接收的问题">
+                        <i class="far fa-eye fa-fw" aria-hidden="true"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;次阅读
+                    </span>&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#现象">现象</a></li>
+        <li><a href="#分析">分析</a></li>
+        <li><a href="#解决">解决</a></li>
+        <li><a href="#总结">总结</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>学习zabbix报警媒介，尝试调用shell脚本来完成邮件的发送操作时，在触发动作后，报警邮件顺利发出，但我所在的邮箱却一直没有收到报警邮件。</p>
+<h3 id="现象">现象</h3>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/971D4D6D-5EB0-4ffa-88C7-AAEC05DABC9E.png"
+        data-srcset="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/971D4D6D-5EB0-4ffa-88C7-AAEC05DABC9E.png, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/971D4D6D-5EB0-4ffa-88C7-AAEC05DABC9E.png 1.5x, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/971D4D6D-5EB0-4ffa-88C7-AAEC05DABC9E.png 2x"
+        data-sizes="auto"
+        alt="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/971D4D6D-5EB0-4ffa-88C7-AAEC05DABC9E.png"
+        title="avatar" />
+在测试多次后查看zabbix审计日志时发现zabbix均已成功发送邮件，但邮箱中一直没有收到报警邮件。
+<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/DAB4A2B2-5877-4e8c-914D-F45B20A8E328.png"
+        data-srcset="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/DAB4A2B2-5877-4e8c-914D-F45B20A8E328.png, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/DAB4A2B2-5877-4e8c-914D-F45B20A8E328.png 1.5x, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/DAB4A2B2-5877-4e8c-914D-F45B20A8E328.png 2x"
+        data-sizes="auto"
+        alt="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/DAB4A2B2-5877-4e8c-914D-F45B20A8E328.png"
+        title="avatar" /></p>
+<h3 id="分析">分析</h3>
+<p>在服务器上尝试调用mailx程序，邮件顺利发送并在邮箱中可以看到报警邮件。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Ξ (bochs) ~ → echo &#34;test content&#34; | mailx -s &#34;test title&#34; 17551094687@163.com  
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Ξ (bochs) ~ →
+</span></span></code></pre></div><p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/Image2.png"
+        data-srcset="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/Image2.png, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/Image2.png 1.5x, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/Image2.png 2x"
+        data-sizes="auto"
+        alt="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/Image2.png"
+        title="avatar" />
+服务器可以顺利的发送邮件，但为什么zabbix发送的邮件迟迟收不到？我转换了思路，不在使用最新版的4.4.5版本，改换成4.0LTS版本，发现问题依然存在，这时就能判断不是zabbix程序的问题。
+继续想，会不会是zabbix没有调用到脚本呢，我在脚本中又加入了时间：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="cp">#!/bin/bash
+</span></span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="cp"></span> 
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="nb">export</span> <span class="nv">LANG</span><span class="o">=</span><span class="s2">&#34;zh_CN.utf8&#34;</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="nb">echo</span> <span class="sb">`</span>date <span class="s2">&#34;+%Y-%m-%d %H:%M:%S&#34;</span><span class="sb">`</span> 进入脚本&gt;&gt; /tmp/mailx.log
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="nb">echo</span> <span class="nv">$1</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="nb">echo</span> <span class="nv">$2</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="nb">echo</span> <span class="nv">$3</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="nv">SEND_TO</span><span class="o">=</span><span class="nv">$1</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="nv">SEND_SUBJECT</span><span class="o">=</span><span class="nv">$2</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="nv">FILE</span><span class="o">=</span>/tmp/mailtmp.txt
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;</span><span class="nv">$3</span><span class="s2">&#34;</span> &gt;<span class="nv">$FILE</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">dos2unix -k <span class="nv">$FILE</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl">/usr/bin/mailx -s <span class="s2">&#34;</span><span class="nv">$SEND_SUBJECT</span><span class="s2">&#34;</span> <span class="nv">$SEND_TO</span> &lt; <span class="nv">$FILE</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="nb">echo</span> <span class="sb">`</span>date <span class="s2">&#34;+%Y-%m-%d %H:%M:%S&#34;</span><span class="sb">`</span> 退出脚本&gt;&gt; /tmp/mailx.log
+</span></span></code></pre></div><p>运行测试并查看/tmp/mailx.log，发现zabbix顺利进入了脚本，并且脚本中的参数也正确传递了</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">2020-02-02 09:44:22 进入脚本
+</span></span><span class="line"><span class="ln">2</span><span class="cl">************@163.com
+</span></span><span class="line"><span class="ln">3</span><span class="cl">故障PROBLEM,服务器:aliyun发生: 无法telnet zabbix_server的10051端口;宏变量函数测试:宏变量测试成功故障!
+</span></span><span class="line"><span class="ln">4</span><span class="cl"> 事件ID:93PROBLEM:1tzabbix server的10051端口:1宏变量函数测试:宏变量测试成功
+</span></span><span class="line"><span class="ln">5</span><span class="cl">2020-02-02 09:44:22 邮件成功发送
+</span></span></code></pre></div><p>将脚本中的参数拿到命令行执行参数测试，发现邮件顺利发送。zabbix顺利进入了脚本但是没发送邮件，命令行确是能正常发送。</p>
+<h3 id="解决">解决</h3>
+<p>重新梳理了一遍思路后推测，会不会是zabbix无权限调用mailx程序呢？为了验证这个问题，我先将zabbix的默认shell切换为/bin/bash,以使我能顺利的登录到zabbix用户</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">usermod -s /bin/bash zabbix
+</span></span><span class="line"><span class="ln">2</span><span class="cl">su - zabbix #切换到zabbix用户
+</span></span></code></pre></div><p>调用脚本进行测试发现重要的报错信息</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">-bash-4.2$ echo &#34;11&#34; | mailx -s &#34;22&#34; ############@163.com
+</span></span><span class="line"><span class="ln">2</span><span class="cl">-bash-4.2$ Error initializing NSS: Unknown error -8015.
+</span></span><span class="line"><span class="ln">3</span><span class="cl">. . . message not sent.
+</span></span></code></pre></div><p>这个报错是之前在root账户时从未发生的报错，这时可以断定是权限问题了。查看mailx程序的权限是755，也就是说zabbix可以顺利的调用到mailx程序进行邮件的发送。
+后来，终于找到了问题的所在，原来我的mailx配置文件/etc/mail.rc中的秘钥文件位于/root目录下</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">set from=&#34;###########@163.com&#34;
+</span></span><span class="line"><span class="ln">2</span><span class="cl">set smtp=&#34;smtps://smtp.163.com:465&#34;
+</span></span><span class="line"><span class="ln">3</span><span class="cl">set smtp-auth-user=&#34;###########@163.com&#34;
+</span></span><span class="line"><span class="ln">4</span><span class="cl">set smtp-auth-password=&#34;############&#34;
+</span></span><span class="line"><span class="ln">5</span><span class="cl">set smtp-auth=&#34;login&#34;
+</span></span><span class="line"><span class="ln">6</span><span class="cl">set ssl-verify=&#34;ignore&#34;
+</span></span><span class="line"><span class="ln">7</span><span class="cl">set nss-config-dir=&#34;/root/.certs&#34;
+</span></span></code></pre></div><p>我们知道普通用户是肯定不能进入root用户的家目录的，这就导致了zabbix无法调用到证书，进而无法发送邮件的
+将秘钥文件拷贝到其他的目录下，并将这个目录授予777权限，更改mailx的配置文件。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">cp -R /root/.certs /etc/zabbix &amp;&amp; chmod 777 /etc/zabbix/.certs
+</span></span></code></pre></div><p>这时测试邮件可以顺利的发送，在尝试用zabbix触发报警邮件，报警邮件顺利发送，邮箱中也有报警邮件了。
+<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/2702EC77-AC9A-432d-86A7-264EF61D6E39.png"
+        data-srcset="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/2702EC77-AC9A-432d-86A7-264EF61D6E39.png, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/2702EC77-AC9A-432d-86A7-264EF61D6E39.png 1.5x, https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/2702EC77-AC9A-432d-86A7-264EF61D6E39.png 2x"
+        data-sizes="auto"
+        alt="https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/hexo-pic/zabbix1/2702EC77-AC9A-432d-86A7-264EF61D6E39.png"
+        title="avatar" />
+最后，将zabbix的默认shell换回/sbin/nolgin,防止恶意利用</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">usermod -s /sbin/nologin zabbix
+</span></span></code></pre></div><h3 id="总结">总结</h3>
+<p>问题终于厘清，邮箱中顺利的接受到了邮件。追根溯源才发现是权限问题，下次有多用户调用的文件时应避免放到/root目录防止普通用户无法调用。</p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-02-02</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/monitoring/">Monitoring</a>,&nbsp;<a href="/tags/troubleshooting/">TroubleShooting</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/centos%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85mysql8.0/" class="prev" rel="prev" title="CentOS编译安装MySQL8.0"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>CentOS编译安装MySQL8.0</a>
+            <a href="/posts/centos7%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7/" class="next" rel="next" title="CentOS7内核升级">CentOS7内核升级<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
+</div>
+<div id="comments"><div id="valine" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://valine.js.org/">Valine</a>.
+            </noscript></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork">
+				Powered By <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" width="20" height="10" style="fill: #ff6a00" class="sc-CB-bczRLJ CB-fQyPEP"><path d="M21.4 22.4h21.2v-4.8H21.4z"></path><path d="M53.3 0H39.2l3.4 4.8L52.9 8c1.9.6 3.1 2.3 3.1 4.3v15.4c0 2-1.2 3.7-3.1 4.3l-10.3 3.2-3.4 4.8h14.1c6 0 10.7-4.8 10.7-10.7V10.7C64 4.7 59.2 0 53.3 0M10.7 0h14.1l-3.4 4.8L11.1 8A4.5 4.5 0 0 0 8 12.3v15.4c0 2 1.2 3.7 3.1 4.3l10.3 3.2 3.4 4.8H10.7C4.7 40 0 35.2 0 29.3V10.7C0 4.7 4.8 0 10.7 0"></path></svg><a href="https://www.aliyun.com">Aliyun</a><br /><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2019 - 2023</span><span class="icp-splitter">&nbsp;|&nbsp;</span><br class="icp-br"/>
+                    <span class="icp">苏ICP备19065273号</span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/valine/valine.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/valine@1.4.18/dist/Valine.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/algoliasearch@4.13.0/dist/algoliasearch-lite.umd.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":50},"comment":{"valine":{"appId":"IyRdCooou4lRgtrqYYEIDgRK-gzGzoHsz","appKey":"3hXIq4IuQBcg76WWjetWOrMO","avatar":"mp","el":"#valine","emojiCDN":"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/","emojiMaps":{"100":"1f4af.png","alien":"1f47d.png","anger":"1f4a2.png","angry":"1f620.png","anguished":"1f627.png","astonished":"1f632.png","black_heart":"1f5a4.png","blue_heart":"1f499.png","blush":"1f60a.png","bomb":"1f4a3.png","boom":"1f4a5.png","broken_heart":"1f494.png","brown_heart":"1f90e.png","clown_face":"1f921.png","cold_face":"1f976.png","cold_sweat":"1f630.png","confounded":"1f616.png","confused":"1f615.png","cry":"1f622.png","crying_cat_face":"1f63f.png","cupid":"1f498.png","dash":"1f4a8.png","disappointed":"1f61e.png","disappointed_relieved":"1f625.png","dizzy":"1f4ab.png","dizzy_face":"1f635.png","drooling_face":"1f924.png","exploding_head":"1f92f.png","expressionless":"1f611.png","face_vomiting":"1f92e.png","face_with_cowboy_hat":"1f920.png","face_with_hand_over_mouth":"1f92d.png","face_with_head_bandage":"1f915.png","face_with_monocle":"1f9d0.png","face_with_raised_eyebrow":"1f928.png","face_with_rolling_eyes":"1f644.png","face_with_symbols_on_mouth":"1f92c.png","face_with_thermometer":"1f912.png","fearful":"1f628.png","flushed":"1f633.png","frowning":"1f626.png","ghost":"1f47b.png","gift_heart":"1f49d.png","green_heart":"1f49a.png","grimacing":"1f62c.png","grin":"1f601.png","grinning":"1f600.png","hankey":"1f4a9.png","hear_no_evil":"1f649.png","heart":"2764-fe0f.png","heart_decoration":"1f49f.png","heart_eyes":"1f60d.png","heart_eyes_cat":"1f63b.png","heartbeat":"1f493.png","heartpulse":"1f497.png","heavy_heart_exclamation_mark_ornament":"2763-fe0f.png","hole":"1f573-fe0f.png","hot_face":"1f975.png","hugging_face":"1f917.png","hushed":"1f62f.png","imp":"1f47f.png","innocent":"1f607.png","japanese_goblin":"1f47a.png","japanese_ogre":"1f479.png","joy":"1f602.png","joy_cat":"1f639.png","kiss":"1f48b.png","kissing":"1f617.png","kissing_cat":"1f63d.png","kissing_closed_eyes":"1f61a.png","kissing_heart":"1f618.png","kissing_smiling_eyes":"1f619.png","laughing":"1f606.png","left_speech_bubble":"1f5e8-fe0f.png","love_letter":"1f48c.png","lying_face":"1f925.png","mask":"1f637.png","money_mouth_face":"1f911.png","nauseated_face":"1f922.png","nerd_face":"1f913.png","neutral_face":"1f610.png","no_mouth":"1f636.png","open_mouth":"1f62e.png","orange_heart":"1f9e1.png","partying_face":"1f973.png","pensive":"1f614.png","persevere":"1f623.png","pleading_face":"1f97a.png","pouting_cat":"1f63e.png","purple_heart":"1f49c.png","rage":"1f621.png","relaxed":"263a-fe0f.png","relieved":"1f60c.png","revolving_hearts":"1f49e.png","right_anger_bubble":"1f5ef-fe0f.png","robot_face":"1f916.png","rolling_on_the_floor_laughing":"1f923.png","scream":"1f631.png","scream_cat":"1f640.png","see_no_evil":"1f648.png","shushing_face":"1f92b.png","skull":"1f480.png","skull_and_crossbones":"2620-fe0f.png","sleeping":"1f634.png","sleepy":"1f62a.png","slightly_frowning_face":"1f641.png","slightly_smiling_face":"1f642.png","smile":"1f604.png","smile_cat":"1f638.png","smiley":"1f603.png","smiley_cat":"1f63a.png","smiling_face_with_3_hearts":"1f970.png","smiling_imp":"1f608.png","smirk":"1f60f.png","smirk_cat":"1f63c.png","sneezing_face":"1f927.png","sob":"1f62d.png","space_invader":"1f47e.png","sparkling_heart":"1f496.png","speak_no_evil":"1f64a.png","speech_balloon":"1f4ac.png","star-struck":"1f929.png","stuck_out_tongue":"1f61b.png","stuck_out_tongue_closed_eyes":"1f61d.png","stuck_out_tongue_winking_eye":"1f61c.png","sunglasses":"1f60e.png","sweat":"1f613.png","sweat_drops":"1f4a6.png","sweat_smile":"1f605.png","thinking_face":"1f914.png","thought_balloon":"1f4ad.png","tired_face":"1f62b.png","triumph":"1f624.png","two_hearts":"1f495.png","unamused":"1f612.png","upside_down_face":"1f643.png","weary":"1f629.png","white_frowning_face":"2639-fe0f.png","white_heart":"1f90d.png","wink":"1f609.png","woozy_face":"1f974.png","worried":"1f61f.png","yawning_face":"1f971.png","yellow_heart":"1f49b.png","yum":"1f60b.png","zany_face":"1f92a.png","zipper_mouth_face":"1f910.png","zzz":"1f4a4.png"},"enableQQ":false,"highlight":true,"lang":"zh-CN","pageSize":10,"placeholder":"你的评论 ...","recordIP":true,"serverURLs":"https://iyrdcooo.lc-cn-n1-shared.com","visitor":true}},"search":{"algoliaAppID":"RALZ9QXE5X","algoliaIndex":"search","algoliaSearchKey":"edb3145c2e9fe9c9c4eb49630c0dc4f6","highlightTag":"em","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":30,"type":"algolia"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

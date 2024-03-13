@@ -1,0 +1,32 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Monitoring - 标签 - 御秋博客</title>
+        <link>https://www.freethinker.top/tags/monitoring/</link>
+        <description>Monitoring - 标签 - 御秋博客</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>395108141t@gmail.com (ltzhang)</managingEditor>
+            <webMaster>395108141t@gmail.com (ltzhang)</webMaster><lastBuildDate>Sun, 07 Mar 2021 11:50:47 &#43;0000</lastBuildDate><atom:link href="https://www.freethinker.top/tags/monitoring/" rel="self" type="application/rss+xml" /><item>
+    <title>Prometheus-Operator监控Nginx Ingress</title>
+    <link>https://www.freethinker.top/posts/prometheus-operator%E7%9B%91%E6%8E%A7nginx-ingress/</link>
+    <pubDate>Sun, 07 Mar 2021 11:50:47 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/prometheus-operator%E7%9B%91%E6%8E%A7nginx-ingress/</guid>
+    <description><![CDATA[<p><strong>前言</strong>：最近客户需要监控ingress流量，在查阅资料后成功部署，记录下部署的过程及遇到的问题。</p>]]></description>
+</item>
+<item>
+    <title>Prometheus&#43;Grafana监控宿主机</title>
+    <link>https://www.freethinker.top/posts/prometheus-grafana%E7%9B%91%E6%8E%A7%E5%AE%BF%E4%B8%BB%E6%9C%BA/</link>
+    <pubDate>Fri, 06 Mar 2020 23:21:10 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/prometheus-grafana%E7%9B%91%E6%8E%A7%E5%AE%BF%E4%B8%BB%E6%9C%BA/</guid>
+    <description><![CDATA[<p>Prometheus是非常优秀的监控工具，准确的说是一套完整的监控方案。提供了数据收集，存储，处理，加工展示，告警等一系列完整解决方案</p>]]></description>
+</item>
+<item>
+    <title>记一次zabbix报警邮件无法接收的问题</title>
+    <link>https://www.freethinker.top/posts/%E8%AE%B0%E4%B8%80%E6%AC%A1zabbix%E6%8A%A5%E8%AD%A6%E9%82%AE%E4%BB%B6%E6%97%A0%E6%B3%95%E6%8E%A5%E6%94%B6%E7%9A%84%E9%97%AE%E9%A2%98/</link>
+    <pubDate>Sun, 02 Feb 2020 10:29:38 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/%E8%AE%B0%E4%B8%80%E6%AC%A1zabbix%E6%8A%A5%E8%AD%A6%E9%82%AE%E4%BB%B6%E6%97%A0%E6%B3%95%E6%8E%A5%E6%94%B6%E7%9A%84%E9%97%AE%E9%A2%98/</guid>
+    <description><![CDATA[<p>学习zabbix报警媒介，尝试调用shell脚本来完成邮件的发送操作时，在触发动作后，报警邮件顺利发出，但我所在的邮箱却一直没有收到报警邮件。</p>]]></description>
+</item>
+</channel>
+</rss>

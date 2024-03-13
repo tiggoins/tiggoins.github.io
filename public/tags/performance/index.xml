@@ -1,0 +1,16 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Performance - 标签 - 御秋博客</title>
+        <link>https://www.freethinker.top/tags/performance/</link>
+        <description>Performance - 标签 - 御秋博客</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>395108141t@gmail.com (ltzhang)</managingEditor>
+            <webMaster>395108141t@gmail.com (ltzhang)</webMaster><lastBuildDate>Sat, 29 Feb 2020 22:55:33 &#43;0000</lastBuildDate><atom:link href="https://www.freethinker.top/tags/performance/" rel="self" type="application/rss+xml" /><item>
+    <title>sar命令详解</title>
+    <link>https://www.freethinker.top/posts/sar%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/</link>
+    <pubDate>Sat, 29 Feb 2020 22:55:33 &#43;0000</pubDate>
+    <author>ltzhang</author>
+    <guid>https://www.freethinker.top/posts/sar%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/</guid>
+    <description><![CDATA[<p>sar是强大的linux系统活动状况收集、报告命令。可以收集CPU，内存，磁盘I/O，网络等诸多数据。对于性能分析是个可靠的利器，本文介绍sar命令的各种用法。</p>]]></description>
+</item>
+</channel>
+</rss>
