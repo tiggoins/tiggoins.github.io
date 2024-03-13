@@ -9,6 +9,11 @@ toc: true
 disableAutoCollapse: false
 ---
 
+workqueue 提供了一个简单的队列，支持以下功能：
+1. 按添加顺序处理项目。
+2. 单个项目不会同时被处理多次，如果一个项目在被处理前被添加了多次，它只会被处理一次。
+3. 允许一个项目在处理过程中被重新排队。
+<!--more-->
 ## WorkQueue
 版本: kubernetes-v1.20.11内置client-go: `staging/src/k8s.io/client-go`
 
