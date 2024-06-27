@@ -1,10 +1,12 @@
 ---
-title: 一次Ingress配置引发的"雪崩"
+title: 一次Ingress配置引发的故障
 date: 2024-06-27 15:09:08
 tags:
  - Kubernetes
+ - TroubleShooting
 categories:
  - Kubernetes
+ - TroubleShooting
 toc: true
 ---
 
