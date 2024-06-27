@@ -1,6 +1,6 @@
 ---
 title: 一次Ingress配置引发的故障
-date: 2024-06-27 15:09:08
+date: 2024-06-27 07:09:08
 tags:
  - Kubernetes
  - TroubleShooting
