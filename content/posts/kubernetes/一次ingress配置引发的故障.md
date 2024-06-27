@@ -78,7 +78,8 @@ func NewDefault() Configuration {
 ```bash
 # git clone https://github.com/kubernetes/ingress-nginx 
 # git checkout controller-v0.34.0
-# sed -i 's/ProxyMaxTempFileSize:        "1024m"/ProxyMaxTempFileSize:        "0"/g'  \ ./internal/ingress/controller/config/config.go
+# sed -i 's/ProxyMaxTempFileSize:        "1024m"/ProxyMaxTempFileSize:        "0"/g'  \
+	./internal/ingress/controller/config/config.go
 # make build
 # make image
 ```
@@ -156,7 +157,7 @@ metadata:
 
 该ingress创建于`2023-12-26`并且在`2024-06-25`使用helm更新了`nginx.ingress.kubernetes.io/proxy-buffer-size`的值为2000M。
 
-nginx错误的具体位置如下，省去了其他部分：
+nginx错误产生的具体位置如下，省去了其他部分：
 
 ```c
 // src/http/modules/ngx_http_proxy_module.c -- ngx_http_proxy_merge_loc_conf
@@ -210,4 +211,4 @@ groups:
       summary: "Nginx Ingress Controller Reload Failure"
       description: "The Nginx Ingress Controller has failed to reload its configuration. (instance {{ $labels.instance }})"
 ```
-
+完！
