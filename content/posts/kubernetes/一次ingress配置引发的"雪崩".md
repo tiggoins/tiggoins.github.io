@@ -1,5 +1,5 @@
 ---
-title: 一次Ingress配置引发的故障
+title: 一次Ingress配置引发的"雪崩"
 date: 2024-06-27 07:09:08
 tags:
  - Kubernetes
