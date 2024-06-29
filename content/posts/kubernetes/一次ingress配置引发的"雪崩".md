@@ -56,7 +56,7 @@ nginx: [emerge] "proxy_max_temp_file_size" must be equal to zero to disable  tem
 nginx: configuration file /tmp/nginx-cfg272696236:128257 test failed
 ```
 
-由此可以判断是`proxy_max_temp_file_size`的值非0，或者是这个值小于了`proxy_buffer_size`或者`proxy_buffers`的值。而`proxy_max_temp_file_size`的大小默认为1024m。
+由此可以判断是`proxy_max_temp_file_size`的值非0，或者是这个值小于了`proxy_buffer_size`/`proxy_buffers`的值。而`proxy_max_temp_file_size`的大小默认为1024m。
 
 ```go
 func NewDefault() Configuration {
