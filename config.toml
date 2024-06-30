@@ -239,8 +239,8 @@ enableEmoji = true
     absoluteURL = false
     [params.search.algolia]
       index = "search"
-      appID = "RALZ9QXE5X"
-      searchKey = "edb3145c2e9fe9c9c4eb49630c0dc4f6"
+      appID = "CJZHMBKEXE"
+      searchKey = "0e5307948701f4296846e66d62c16b05"
 
   # Home page config
   # 主页信息设置
