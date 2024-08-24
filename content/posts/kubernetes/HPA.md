@@ -14,7 +14,7 @@ Kubernetes自1.11版本开始引入了名为"HorizontalPodAutoscaler"的控制�
 
 ![image-20210313152925460](https://imagesofhexo.oss-cn-shanghai.aliyuncs.com/typora/image-20210313152925460.png)
 
-除了CPU使用率这个指标外，还可以采用自定义的指标。通常自定义的指标需要容器以某种方式提供，如URL路径"/metrics"提供，即http://<podIP>:<podPort>/metrics获取相应的指标数据。当然如果kubernetes构建在公有云上，亦可以采用公有云服务商提供的指标数据如负载均衡器的QPS等作为HPA控制器的指标来源。
+除了CPU使用率这个指标外，还可以采用自定义的指标。通常自定义的指标需要容器以某种方式提供，如URL路径"/metrics"提供，即http://[podIP]:[podPort]/metrics获取相应的指标数据。当然如果kubernetes构建在公有云上，亦可以采用公有云服务商提供的指标数据如负载均衡器的QPS等作为HPA控制器的指标来源。
 
 ### HPA控制器配置
 
@@ -223,7 +223,7 @@ spec:
 ```yaml
 config.yaml: |
     rules:
-                    #sum(rate(http_requests_total{namespace="xx",pod="xx"}[1m])) by pod:1分钟内全部pod指标http_requests_total的总和的每秒平均值
+    #sum(rate(http_requests_total{namespace="xx",pod="xx"}[1m])) by pod:1分钟内全部pod指标http_requests_total的总和的每秒平均值
     - metricsQuery: sum(rate(<<.Series>>{<<.LabelMatchers>>}[1m])) by (<<.GroupBy>>)                                       
       #将metricsQuery计算的结果赋给新的指标`http_requests`并提供给HPA控制器
       name:
@@ -285,7 +285,7 @@ spec:
 ```
 
 - type=pods:表示从Pods自身获取指标
-- name=http_requests：即adapter中的配置，有http_requests_total计算而来
+- name=http_requests：即adapter中的配置，由http_requests_total计算而来
 - averageValue=500m：即http_requests的目标值为500m。
 
 通过聚合API查询指标数据,pod指标成功采集
