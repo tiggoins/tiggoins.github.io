@@ -76,23 +76,23 @@ func NewDefault() Configuration {
 解决的方法比较简单，修改代码中的默认`ProxyMaxTempFileSize`值为0然后重新构建镜像替换上线，这里列出主要的步骤：
 
 ```bash
-# git clone https://github.com/kubernetes/ingress-nginx 
-# git checkout controller-v0.34.0
-# sed -i 's/ProxyMaxTempFileSize:        "1024m"/ProxyMaxTempFileSize:        "0"/g'  \
+git clone https://github.com/kubernetes/ingress-nginx 
+git checkout controller-v0.34.0
+sed -i 's/ProxyMaxTempFileSize:        "1024m"/ProxyMaxTempFileSize:        "0"/g'  \
 	./internal/ingress/controller/config/config.go
-# make build
-# make image
+make build
+make image
 ```
 
 这里的`make build`由于网络原因拉取镜像缓慢导致构建多次失败，无奈只能修改为本地编译
 
 ```bash
-# export PKG=k8s.io/ingress-nginx
-# export ARCH=amd64
-# export GIT_COMMIT=git-6c73d66ae
-# export REPO_INFO=https://github.com/kubernetes/ingress-nginx
-# export TAG=v0.34.0
-# ./build/build.sh
+export PKG=k8s.io/ingress-nginx
+export ARCH=amd64
+export GIT_COMMIT=git-6c73d66ae
+export REPO_INFO=https://github.com/kubernetes/ingress-nginx
+export TAG=v0.34.0
+./build/build.sh
 ```
 
 将镜像导出替换线上环境后各个业务的访问均恢复正常。
